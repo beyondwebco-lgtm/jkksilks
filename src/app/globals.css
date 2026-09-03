@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-burgundy: #4A0E17;
+  --color-brand-burgundy-dark: #2D070C;
+  --color-brand-gold: #D4AF37;
+  --color-brand-gold-light: #F3E5AB;
+  --color-brand-gold-dark: #AA771C;
+  --color-brand-cream: #FCFBF7;
+  --color-brand-charcoal: #1A181B;
+
+  --font-serif: "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+:root {
+  --background: var(--color-brand-cream);
+  --foreground: var(--color-brand-charcoal);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--color-brand-charcoal);
+    --foreground: var(--color-brand-cream);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-panel {
+  background: rgba(26, 24, 27, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, var(--color-brand-gold-light) 0%, var(--color-brand-gold) 50%, var(--color-brand-gold-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@import "./lotus-animation.css";

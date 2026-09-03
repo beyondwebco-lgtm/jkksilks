@@ -1,0 +1,222 @@
+/* =====================================
+   CONTAINER
+===================================== */
+
+.lotus-animation-wrapper {
+  position: absolute;
+  bottom: 0px; 
+  left: 0;
+  width: 100%; /* Dynamically matches the text width exactly */
+  pointer-events: none;
+}
+
+/* We don't need a fixed scale container anymore, we'll scale the flower directly */
+.lotus-animation {
+  position: relative;
+  width: 100%;
+  height: 0;
+  overflow: visible;
+}
+
+
+/* =================================
+   GREEN STEM — LEFT → RIGHT
+================================= */
+
+.stem {
+  position: absolute;
+  left: 0;
+  bottom: -2px; /* Slightly below the text */
+  height: 2px;
+  width: 0;
+  border-radius: 50px;
+  background: linear-gradient(
+    90deg,
+    #0b5428,
+    #16a34a,
+    #39c95a,
+    #15803d
+  );
+  box-shadow: 0 0 6px rgba(34,197,94,.7);
+}
+
+.group:hover .stem {
+  animation: growStem .65s ease-out forwards;
+}
+
+@keyframes growStem {
+  from { width: 0; }
+  to { width: 100%; } /* Stem grows to EXACTLY the end of the text */
+}
+
+
+/* =================================
+   LOTUS — RIGHT END OF HORIZONTAL STEM
+================================= */
+
+.lotus {
+  position: absolute;
+  
+  /* 
+     The petals are placed at left: 0 and are 27px wide.
+     So the visual center of the flower's base is at X=13.5px.
+     We set the pivot to 13.5px 100%, and shift the container by -13.5px
+     so this pivot sits exactly at the end of the stem (X=100%, Y=-1px).
+  */
+  left: 100%;
+  margin-left: -13.5px;
+  bottom: -1px;
+  
+  width: 95px;
+  height: 105px;
+  
+  transform-box: fill-box;
+  transform-origin: 13.5px 100%; /* Pivot is exactly the visual center of the petals */
+  opacity: 0;
+  transform: rotate(90deg) scale(0.01);
+}
+
+.group:hover .lotus {
+  animation: lotusBloomMirror .65s .58s cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+
+/* =================================
+   MIRRORED LOTUS BLOOM
+   (Scaled to 20% of original size so it acts as an underline motif)
+================================= */
+
+@keyframes lotusBloomMirror {
+  0% {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.01); 
+  }
+  35% {
+    opacity: 1;
+    transform: rotate(90deg) scale(0.09); 
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(90deg) scale(0.216); 
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(90deg) scale(0.2); 
+  }
+}
+
+
+/* =================================
+   PETALS
+================================= */
+
+.petal {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 27px;
+  height: 58px;
+  transform-origin: 50% 100%;
+  border-radius: 60% 60% 45% 45%;
+  background: linear-gradient(
+    145deg,
+    #ff9b5c 0%,
+    #f4517d 35%,
+    #d81b60 70%,
+    #8b123f 100%
+  );
+  border: 2px solid #f5b52a;
+  box-shadow: inset 0 0 6px rgba(255,255,255,.3);
+  opacity: 0;
+}
+
+
+/* =================================
+   PETAL POSITIONS
+================================= */
+
+.p1 {
+  --angle: -48deg;
+  transform: rotate(var(--angle));
+}
+.group:hover .p1 {
+  animation: openPetal .28s .98s ease-out forwards;
+}
+
+.p2 {
+  --angle: 48deg;
+  transform: rotate(var(--angle));
+}
+.group:hover .p2 {
+  animation: openPetal .28s 1.03s ease-out forwards;
+}
+
+.p3 {
+  --angle: -28deg;
+  transform: rotate(var(--angle));
+}
+.group:hover .p3 {
+  animation: openPetal .28s 1.08s ease-out forwards;
+}
+
+.p4 {
+  --angle: 28deg;
+  transform: rotate(var(--angle));
+}
+.group:hover .p4 {
+  animation: openPetal .28s 1.13s ease-out forwards;
+}
+
+.p5 {
+  --angle: -12deg;
+  transform: rotate(var(--angle));
+}
+.group:hover .p5 {
+  animation: openPetal .28s 1.18s ease-out forwards;
+}
+
+.p6 {
+  --angle: 12deg;
+  transform: rotate(var(--angle));
+}
+.group:hover .p6 {
+  animation: openPetal .28s 1.23s ease-out forwards;
+}
+
+.p7 {
+  z-index: 5;
+}
+.group:hover .p7 {
+  animation: centerPetal .32s 1.28s ease-out forwards;
+}
+
+
+/* =================================
+   PETAL OPEN
+================================= */
+
+@keyframes openPetal {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg) scale(.05);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(var(--angle)) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(var(--angle)) scale(1);
+  }
+}
+
+
+/* =================================
+   CENTER PETAL
+================================= */
+
+@keyframes centerPetal {
+  0% { opacity: 0; transform: scale(.05); }
+  65% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
