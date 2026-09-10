@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Sparkles, Check } from 'lucide-react';
+import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Sparkles, Check, Mail } from 'lucide-react';
 import { supabase, Product } from '@/lib/supabase';
+import EnquiryModal from '@/components/EnquiryModal';
+import QuickContactFloating from '@/components/QuickContactFloating';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -15,6 +17,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -79,7 +82,7 @@ export default function ProductDetailPage() {
   const discountPercent = calculateDiscountPercent(product.original_price, product.discount_price);
 
   const handleBuyOnWhatsApp = () => {
-    const whatsappNumber = '919999999999';
+    const whatsappNumber = '916309143484';
     const priceText = product.discount_price 
       ? `(₹${product.discount_price.toLocaleString('en-IN')})` 
       : product.original_price 
@@ -230,6 +233,15 @@ export default function ProductDetailPage() {
                 <MessageCircle className="w-5 h-5 fill-current" />
                 Order via WhatsApp
               </button>
+
+              <button
+                onClick={() => setEnquiryModalOpen(true)}
+                className="w-full py-3.5 border border-[#D4AF37] hover:bg-[#D4AF37]/10 text-[#D4AF37] font-semibold text-xs uppercase tracking-[0.2em] rounded-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Mail className="w-4 h-4" />
+                Formal Enquiry (Email)
+              </button>
+
               <p className="text-center text-[#D4AF37]/60 text-[10px] uppercase tracking-widest">
                 Direct weaver assistance • Instant response on WhatsApp
               </p>
@@ -243,6 +255,15 @@ export default function ProductDetailPage() {
       <footer className="w-full bg-[#1A0106] border-t border-[#D4AF37]/20 py-8 text-center text-[#D4AF37]/60 text-[10px] uppercase tracking-[0.2em]">
         <p>&copy; {new Date().getFullYear()} JKK Silks. All rights reserved.</p>
       </footer>
+
+      {/* Floating Quick Contact & Enquiry Modal */}
+      <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
+      <EnquiryModal
+        isOpen={enquiryModalOpen}
+        onClose={() => setEnquiryModalOpen(false)}
+        defaultCategory={product?.category ? product.category.toUpperCase() : 'Pure Silk Sarees'}
+        defaultProduct={product?.name || ''}
+      />
 
     </div>
   );

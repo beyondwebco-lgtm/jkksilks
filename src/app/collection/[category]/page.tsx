@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Menu, Sparkles, MessageCircle, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Mail } from 'lucide-react';
+import { InstagramIcon } from '@/components/Icons';
 import { supabase, Product } from '@/lib/supabase';
+import EnquiryModal from '@/components/EnquiryModal';
+import QuickContactFloating from '@/components/QuickContactFloating';
 
 const LotusIcon = ({ className }: { className?: string }) => (
   <div className={`relative ${className}`}>
@@ -69,6 +72,7 @@ export default function CategoryPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -185,10 +189,69 @@ export default function CategoryPage() {
 
       </main>
 
-      {/* Minimal Footer */}
-      <footer className="w-full bg-[#1A0106] border-t border-[#D4AF37]/20 py-12 text-center text-[#D4AF37]/60 text-[10px] uppercase tracking-[0.2em]">
-        <p>&copy; {new Date().getFullYear()} JKK Silks. All rights reserved.</p>
+      {/* Royal Footer with Contacts & Socials */}
+      <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 pt-12 pb-16 px-4 sm:px-6 lg:px-8 text-center text-[#D4AF37]/70">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
+          <div className="flex items-center justify-center gap-3">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4AF37]"></div>
+            <LotusIcon className="w-8 h-8 opacity-90" />
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4AF37]"></div>
+          </div>
+
+          <div>
+            <h3 className="font-serif text-2xl text-[#D4AF37] tracking-widest mb-1">JKK SILKS</h3>
+            <p className="text-xs text-[#FFF8E7]/60 tracking-[0.2em] uppercase font-light">
+              Grace &bull; Tradition &bull; Timeless Beauty
+            </p>
+          </div>
+
+          {/* Contact Details & Links */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs tracking-wider">
+            <a 
+              href="https://wa.me/916309143484" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center gap-2 text-[#FFF8E7]/80 hover:text-[#25D366] transition-colors py-1 px-2"
+            >
+              <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              <span>+91 6309 143 484</span>
+            </a>
+
+            <a 
+              href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center gap-2 text-[#FFF8E7]/80 hover:text-[#E1306C] transition-colors py-1 px-2"
+            >
+              <InstagramIcon className="w-4 h-4 text-[#E1306C]" />
+              <span>@jkk_silks</span>
+            </a>
+
+            <button
+              onClick={() => setEnquiryModalOpen(true)}
+              className="flex items-center gap-2 text-[#FFF8E7]/80 hover:text-[#D4AF37] transition-colors py-1 px-2 cursor-pointer"
+            >
+              <Mail className="w-4 h-4 text-[#D4AF37]" />
+              <span>jikkichowdary1@gmail.com</span>
+            </button>
+          </div>
+
+          <div className="pt-4 border-t border-[#D4AF37]/15 w-full flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#D4AF37]/50 tracking-widest uppercase gap-2">
+            <p>&copy; {new Date().getFullYear()} JKK Silks. All sacred rights reserved.</p>
+            <Link href="/" className="hover:text-[#D4AF37] transition-colors">
+              Return to Storefront
+            </Link>
+          </div>
+        </div>
       </footer>
+
+      {/* Floating Quick Contact & Enquiry Modal */}
+      <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
+      <EnquiryModal 
+        isOpen={enquiryModalOpen} 
+        onClose={() => setEnquiryModalOpen(false)} 
+        defaultCategory={categoryInfo.name} 
+      />
       
     </div>
   );

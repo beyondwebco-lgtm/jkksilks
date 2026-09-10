@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, Sparkles, MessageCircle, X } from 'lucide-react';
+import { Menu, Sparkles, MessageCircle, X, Mail } from 'lucide-react';
+import { InstagramIcon } from '@/components/Icons';
 import { supabase, Product } from '@/lib/supabase';
+import EnquiryModal from '@/components/EnquiryModal';
+import QuickContactFloating from '@/components/QuickContactFloating';
 
 const LotusIcon = ({ className }: { className?: string }) => (
   <div className={`relative ${className}`}>
@@ -61,6 +64,7 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -160,7 +164,7 @@ export default function Home() {
             <div className="hidden lg:flex gap-10 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
               <NavLink text="Heritage" href="/collection/heritage" />
               <a 
-                href="https://wa.me/919999999999" 
+                href="https://wa.me/916309143484" 
                 target="_blank" 
                 rel="noreferrer"
                 className="hover:text-[#FFF8E7] transition-colors"
@@ -169,15 +173,39 @@ export default function Home() {
               </a>
             </div>
 
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-3">
+              {/* Instagram Profile */}
               <a 
-                href="https://wa.me/919999999999" 
+                href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
                 target="_blank" 
                 rel="noreferrer"
-                className="hidden sm:flex items-center gap-2 border border-[#D4AF37]/40 hover:border-[#D4AF37] px-3.5 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#210209] transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+                className="text-[#D4AF37]/80 hover:text-[#D4AF37] hover:scale-110 transition-transform p-1.5 rounded-full hover:bg-[#D4AF37]/10"
+                title="Follow JKK Silks on Instagram"
+                aria-label="Instagram"
               >
-                <MessageCircle className="w-3.5 h-3.5" /> Enquire
+                <InstagramIcon className="w-4 h-4" />
               </a>
+
+              {/* WhatsApp Chat Button */}
+              <a 
+                href="https://wa.me/916309143484" 
+                target="_blank" 
+                rel="noreferrer"
+                className="hidden sm:flex items-center gap-1.5 border border-[#D4AF37]/40 hover:border-[#D4AF37] px-3 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+                title="Chat on WhatsApp"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>+91 6309 143 484</span>
+              </a>
+
+              {/* Formal Enquiry Button */}
+              <button 
+                onClick={() => setEnquiryModalOpen(true)}
+                className="flex items-center gap-1.5 border border-[#D4AF37] px-3.5 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] hover:bg-[#E5C158] font-semibold transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>Enquire</span>
+              </button>
             </div>
           </div>
 
@@ -188,44 +216,53 @@ export default function Home() {
           <div className="lg:hidden absolute top-full left-0 right-0 z-50 bg-[#1A0106]/98 backdrop-blur-md border-b border-[#D4AF37]/30 px-6 py-6 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
             <div className="flex flex-col gap-4 text-xs font-medium uppercase tracking-[0.25em]">
               <Link 
-                href="/collection/sarees"
+                href="/collection/sarees" 
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
               >
                 ✦ Pure Sarees
               </Link>
               <Link 
-                href="/collection/jewellery"
+                href="/collection/jewellery" 
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
               >
                 ✤ Imitation Jewellery
               </Link>
               <Link 
-                href="/collection/heritage"
+                href="/collection/heritage" 
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
               >
                 ✺ Heritage Artifacts
               </Link>
               <a 
-                href="https://wa.me/919999999999" 
+                href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
                 target="_blank" 
                 rel="noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
+                className="flex items-center gap-2 py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
               >
-                Contact
+                <InstagramIcon className="w-4 h-4 text-[#E1306C]" /> Follow on Instagram
               </a>
               <a 
-                href="https://wa.me/919999999999" 
+                href="https://wa.me/916309143484" 
                 target="_blank" 
                 rel="noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="inline-flex items-center justify-center gap-2 border border-[#D4AF37] px-4 py-2.5 mt-2 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] font-semibold"
+                className="inline-flex items-center justify-center gap-2 border border-[#25D366] text-white bg-[#25D366] px-4 py-2.5 mt-2 rounded-sm text-xs uppercase tracking-wider font-semibold shadow-md"
               >
-                <MessageCircle className="w-4 h-4" /> Enquire on WhatsApp
+                <MessageCircle className="w-4 h-4" /> WhatsApp: +91 6309 143 484
               </a>
+              <button 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setEnquiryModalOpen(true);
+                }}
+                className="inline-flex items-center justify-center gap-2 border border-[#D4AF37] px-4 py-2.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] font-semibold cursor-pointer shadow-md"
+              >
+                <Mail className="w-4 h-4" /> Formal Enquiry
+              </button>
             </div>
           </div>
         )}
@@ -415,10 +452,65 @@ export default function Home() {
 
       </main>
 
-      {/* Minimal Footer */}
-      <footer className="w-full bg-[#1A0106] border-t border-[#D4AF37]/20 py-12 text-center text-[#D4AF37]/60 text-[10px] uppercase tracking-[0.2em]">
-        <p>&copy; {new Date().getFullYear()} JKK Silks. All rights reserved.</p>
+      {/* Royal Footer with Contacts & Socials */}
+      <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 pt-12 pb-16 px-4 sm:px-6 lg:px-8 text-center text-[#D4AF37]/70">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-6">
+          <div className="flex items-center justify-center gap-3">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4AF37]"></div>
+            <LotusIcon className="w-8 h-8 opacity-90" />
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4AF37]"></div>
+          </div>
+
+          <div>
+            <h3 className="font-serif text-2xl text-[#D4AF37] tracking-widest mb-1">JKK SILKS</h3>
+            <p className="text-xs text-[#FFF8E7]/60 tracking-[0.2em] uppercase font-light">
+              Grace &bull; Tradition &bull; Timeless Beauty
+            </p>
+          </div>
+
+          {/* Contact Details & Links */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs tracking-wider">
+            <a 
+              href="https://wa.me/916309143484" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center gap-2 text-[#FFF8E7]/80 hover:text-[#25D366] transition-colors py-1 px-2"
+            >
+              <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              <span>+91 6309 143 484</span>
+            </a>
+
+            <a 
+              href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center gap-2 text-[#FFF8E7]/80 hover:text-[#E1306C] transition-colors py-1 px-2"
+            >
+              <InstagramIcon className="w-4 h-4 text-[#E1306C]" />
+              <span>@jkk_silks</span>
+            </a>
+
+            <button
+              onClick={() => setEnquiryModalOpen(true)}
+              className="flex items-center gap-2 text-[#FFF8E7]/80 hover:text-[#D4AF37] transition-colors py-1 px-2 cursor-pointer"
+            >
+              <Mail className="w-4 h-4 text-[#D4AF37]" />
+              <span>jikkichowdary1@gmail.com</span>
+            </button>
+          </div>
+
+          <div className="pt-4 border-t border-[#D4AF37]/15 w-full flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#D4AF37]/50 tracking-widest uppercase gap-2">
+            <p>&copy; {new Date().getFullYear()} JKK Silks. All sacred rights reserved.</p>
+            <Link href="/admin/login" className="hover:text-[#D4AF37] transition-colors">
+              Admin Portal
+            </Link>
+          </div>
+        </div>
       </footer>
+
+      {/* Floating Quick Contact & Enquiry Modal */}
+      <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
+      <EnquiryModal isOpen={enquiryModalOpen} onClose={() => setEnquiryModalOpen(false)} />
       
     </div>
   );
