@@ -1,0 +1,192 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { Menu, Sparkles, MessageCircle, ArrowLeft } from 'lucide-react';
+import { supabase, Product } from '@/lib/supabase';
+
+const LotusIcon = ({ className }: { className?: string }) => (
+  <div className={`relative ${className}`}>
+    <Image 
+      src="/images/lotus_icon_transparent.png" 
+      alt="Lotus Motif" 
+      fill 
+      className="object-contain"
+    />
+  </div>
+);
+
+const LotusAnimation = () => (
+  <div className="lotus-animation-wrapper">
+    <div className="lotus-animation">
+      <div className="stem"></div>
+      <div className="lotus">
+        <span className="petal p1"></span>
+        <span className="petal p2"></span>
+        <span className="petal p3"></span>
+        <span className="petal p4"></span>
+        <span className="petal p5"></span>
+        <span className="petal p6"></span>
+        <span className="petal p7"></span>
+      </div>
+    </div>
+  </div>
+);
+
+const curatedCategories = {
+  sarees: {
+    id: 'sarees',
+    name: 'Pure Sarees',
+    description: 'Handwoven Kanjivaram, Banarasi & Pure Silk Sarees',
+    icon: '✦',
+  },
+  jewellery: {
+    id: 'jewellery',
+    name: 'Imitation Jewellery',
+    description: 'Intricate temple necklaces, matte jhumkas & bridal adornments',
+    icon: '✤',
+  },
+  heritage: {
+    id: 'heritage',
+    name: 'Heritage Artifacts',
+    description: 'Sacred bronze pieces, puja brassware & divine heirlooms',
+    icon: '✺',
+  },
+};
+
+export default function CategoryPage() {
+  const router = useRouter();
+  const params = useParams();
+  const categoryId = params?.category as string;
+  const categoryInfo = curatedCategories[categoryId as keyof typeof curatedCategories] || {
+    id: categoryId,
+    name: categoryId ? categoryId.charAt(0).toUpperCase() + categoryId.slice(1) : '',
+    description: `Discover our collection of ${categoryId}`,
+    icon: '✦',
+  };
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('category', categoryId)
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (categoryId) {
+      fetchProducts();
+    }
+  }, [categoryId]);
+
+  const calculateDiscountPercent = (orig?: number | null, disc?: number | null) => {
+    if (orig && disc && orig > disc && orig > 0) {
+      return Math.round(((orig - disc) / orig) * 100);
+    }
+    return null;
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#210209] text-[#D4AF37] font-sans selection:bg-[#D4AF37] selection:text-[#210209]">
+      {/* Top Navigation: Only Back to Home Button */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+        <Link 
+          href="/" 
+          className="inline-flex items-center gap-2 text-[#D4AF37] hover:text-[#FFF8E7] transition-all text-xs uppercase tracking-[0.2em] font-medium bg-[#D4AF37]/10 hover:bg-[#D4AF37]/25 px-5 py-2.5 rounded-full border border-[#D4AF37]/30 hover:border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to Home
+        </Link>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="flex-1 w-full flex flex-col items-center px-4 sm:px-6 lg:px-8 pb-32">
+        
+        {/* Category Products */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20 w-full">
+            <LotusAnimation />
+          </div>
+        ) : (
+          <div className="w-full flex flex-col mt-8">
+            <section className="w-full max-w-7xl mx-auto px-4">
+              <div className="text-center mb-10 flex flex-col items-center">
+                <LotusIcon className="w-9 h-9 mb-2.5 opacity-95 filter drop-shadow-[0_2px_10px_rgba(212,175,55,0.4)]" />
+                <h2 className="text-[#D4AF37] font-serif text-3xl mb-3">{categoryInfo.name}</h2>
+                <p className="text-[#FFF8E7]/60 text-sm tracking-wide font-light">{categoryInfo.description}</p>
+              </div>
+
+              {products.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {products.map((product) => (
+                    <Link 
+                      href={`/product/${product.id}`} 
+                      key={product.id}
+                      className="group relative flex flex-col bg-[#1A0106] rounded-md border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 overflow-hidden"
+                    >
+                      <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-[#D4AF37]/30">
+                        <Image 
+                          src={product.image_url} 
+                          alt={product.name} 
+                          fill 
+                          className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        {calculateDiscountPercent(product.original_price, product.discount_price) && (
+                          <div className="absolute top-3 left-3 bg-[#D4AF37] text-[#210209] text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded-sm shadow-md">
+                            {calculateDiscountPercent(product.original_price, product.discount_price)}% Off
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-5 flex flex-col flex-1 items-center text-center">
+                        <h3 className="text-[#D4AF37] font-serif text-lg mb-2">{product.name}</h3>
+                        {product.description && (
+                          <p className="text-[#FFF8E7]/70 text-xs line-clamp-2 mb-4 leading-relaxed font-light">{product.description}</p>
+                        )}
+                        <div className="mt-auto flex flex-col items-center gap-1">
+                          {product.discount_price ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[#D4AF37] font-medium">₹{product.discount_price.toLocaleString('en-IN')}</span>
+                              <span className="text-[#FFF8E7]/50 text-xs line-through decoration-[#D4AF37]/50">₹{product.original_price?.toLocaleString('en-IN')}</span>
+                            </div>
+                          ) : product.original_price ? (
+                            <span className="text-[#D4AF37] font-medium">₹{product.original_price.toLocaleString('en-IN')}</span>
+                          ) : null}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 sm:py-24">
+                  <div className="border border-[#D4AF37]/40 text-[#D4AF37] text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] px-8 py-3 rounded-full flex items-center gap-2.5 bg-[#D4AF37]/5 shadow-[0_0_20px_rgba(212,175,55,0.15)]">
+                    <Sparkles className="w-4 h-4 text-[#D4AF37]" /> COMING SOON
+                  </div>
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+
+      </main>
+
+      {/* Minimal Footer */}
+      <footer className="w-full bg-[#1A0106] border-t border-[#D4AF37]/20 py-12 text-center text-[#D4AF37]/60 text-[10px] uppercase tracking-[0.2em]">
+        <p>&copy; {new Date().getFullYear()} JKK Silks. All rights reserved.</p>
+      </footer>
+      
+    </div>
+  );
+}
