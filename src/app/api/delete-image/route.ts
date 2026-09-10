@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'imageUrls array is required' }, { status: 400 });
     }
 
-    const publicUrlBase = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
+    const publicUrlBase = (process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '').replace(/\/+$/, '');
 
     const deletePromises = imageUrls.map(async (url: string) => {
       if (!url || typeof url !== 'string') return;

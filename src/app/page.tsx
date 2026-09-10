@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Menu, Sparkles, MessageCircle, X, Mail } from 'lucide-react';
+import { Menu, MessageCircle, X, Mail } from 'lucide-react';
 import { InstagramIcon } from '@/components/Icons';
 import { supabase, Product } from '@/lib/supabase';
 import EnquiryModal from '@/components/EnquiryModal';
@@ -60,7 +59,6 @@ const NavLink = ({
 };
 
 export default function Home() {
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -92,27 +90,6 @@ export default function Home() {
     }
     return null;
   };
-
-  const curatedCategories = [
-    {
-      id: 'sarees',
-      name: 'Pure Sarees',
-      description: 'Handwoven Kanjivaram, Banarasi & Pure Silk Sarees',
-      icon: '✦',
-    },
-    {
-      id: 'jewellery',
-      name: 'Imitation Jewellery',
-      description: 'Intricate temple necklaces, matte jhumkas & bridal adornments',
-      icon: '✤',
-    },
-    {
-      id: 'heritage',
-      name: 'Heritage Artifacts',
-      description: 'Sacred bronze pieces, puja brassware & divine heirlooms',
-      icon: '✺',
-    },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#210209] text-[#D4AF37] font-sans selection:bg-[#D4AF37] selection:text-[#210209]">

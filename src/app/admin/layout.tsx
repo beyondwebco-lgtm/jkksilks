@@ -32,15 +32,13 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
   // If on /admin/login, bypass layout wrapper
   const isLoginPage = pathname ? pathname.includes('/admin/login') : false;
+  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
+  const [loading, setLoading] = useState(!isLoginPage);
 
   useEffect(() => {
     if (isLoginPage) {
-      setLoading(false);
       return;
     }
 

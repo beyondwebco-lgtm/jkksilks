@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, Send, Mail, Phone, User, Calendar, MessageSquare, Sparkles, CheckCircle2, MessageCircle } from 'lucide-react';
+import { X, Send, Mail, Phone, User, Calendar, CheckCircle2, MessageCircle } from 'lucide-react';
 
 interface EnquiryModalProps {
   isOpen: boolean;

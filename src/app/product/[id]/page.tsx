@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Sparkles, Check, Mail } from 'lucide-react';
+import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Mail } from 'lucide-react';
 import { supabase, Product } from '@/lib/supabase';
 import EnquiryModal from '@/components/EnquiryModal';
 import QuickContactFloating from '@/components/QuickContactFloating';
@@ -21,26 +21,36 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!id) return;
+
+    let isMounted = true;
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        if (isMounted) {
+          setProduct(data);
+        }
+      } catch (err) {
+        console.error('Error fetching product details:', err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchProduct();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
-
-  const fetchProduct = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      setProduct(data);
-    } catch (err) {
-      console.error('Error fetching product details:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, MessageCircle, Mail } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { ArrowLeft, Mail } from 'lucide-react';
 import { InstagramIcon } from '@/components/Icons';
 import { supabase, Product } from '@/lib/supabase';
 import EnquiryModal from '@/components/EnquiryModal';
@@ -60,7 +60,6 @@ const curatedCategories = {
 };
 
 export default function CategoryPage() {
-  const router = useRouter();
   const params = useParams();
   const categoryId = params?.category as string;
   const categoryInfo = curatedCategories[categoryId as keyof typeof curatedCategories] || {

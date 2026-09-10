@@ -28,6 +28,10 @@ const remotePatterns: Array<{ protocol: 'https' | 'http'; hostname: string }> = 
     protocol: 'https',
     hostname: '**.cloudflarestorage.com',
   },
+  {
+    protocol: 'https',
+    hostname: '**.supabase.co',
+  },
 ];
 
 if (customR2Hostname && !remotePatterns.some(p => p.hostname === customR2Hostname)) {

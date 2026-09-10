@@ -23,11 +23,11 @@ export async function POST(request: Request) {
     // Generate the presigned URL valid for 5 minutes
     const signedUrl = await getSignedUrl(r2, command, { expiresIn: 300 });
 
+    const r2PublicBase = (process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '').replace(/\/+$/, '');
+
     return NextResponse.json({
       uploadUrl: signedUrl,
-      // The public URL where the image will be accessible after upload
-      // Note: R2 requires a custom domain or public bucket configuration to access this directly.
-      publicUrl: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${uniqueFilename}`,
+      publicUrl: r2PublicBase ? `${r2PublicBase}/${uniqueFilename}` : `/${uniqueFilename}`,
     });
   } catch (error) {
     console.error('Error generating presigned URL:', error);

@@ -5,6 +5,7 @@ import "./globals.css";
 const cormorantGaramond = Cormorant_Garamond({
   weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
+  variable: "--font-cormorant",
 });
 
 const outfit = Outfit({
@@ -39,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className={`${outfit.className} min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]`}>
+      <body className={`${outfit.className} ${cormorantGaramond.variable} min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]`}>
         {children}
       </body>
     </html>

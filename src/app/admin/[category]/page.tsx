@@ -30,23 +30,49 @@ export default function AdminCategoryPage() {
   const [isExploreCollection, setIsExploreCollection] = useState(false);
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
 
-  // Edit Form state
+  // Edit modal state
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editOriginalPrice, setEditOriginalPrice] = useState('');
   const [editDiscountPrice, setEditDiscountPrice] = useState('');
   const [editIsExplore, setEditIsExplore] = useState(false);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
   const [editUploadItems, setEditUploadItems] = useState<UploadItem[]>([]);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
+  const uploadSingleImageToR2 = async (file: File): Promise<string> => {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, contentType: file.type }),
+    });
+    if (!res.ok) throw new Error('Failed to get upload URL from server');
+    const { uploadUrl, publicUrl } = await res.json();
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error('Failed to upload image to Cloudflare storage');
+
+    return publicUrl;
+  };
+
+  const uploadImages = async (files: File[]): Promise<string[]> => {
+    const uploadPromises = files.map(file => uploadSingleImageToR2(file));
+    return await Promise.all(uploadPromises);
+  };
+
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
-    setEditName(product.name || '');
+    setEditName(product.name);
     setEditDescription(product.description || '');
-    setEditOriginalPrice(product.original_price ? String(product.original_price) : '');
-    setEditDiscountPrice(product.discount_price ? String(product.discount_price) : '');
+    setEditOriginalPrice(product.original_price ? product.original_price.toString() : '');
+    setEditDiscountPrice(product.discount_price ? product.discount_price.toString() : '');
     setEditIsExplore(product.is_explore_collection || false);
+    setExistingImages(product.image_urls || [product.image_url]);
     setEditUploadItems([]);
   };
 
@@ -60,23 +86,26 @@ export default function AdminCategoryPage() {
     e.preventDefault();
     if (!editingProduct) return;
     setIsSavingEdit(true);
+
     try {
-      let updatedImageUrls = editingProduct.image_urls || [];
-      if (updatedImageUrls.length === 0 && editingProduct.image_url) {
-        updatedImageUrls = [editingProduct.image_url];
+      let newlyUploadedUrls: string[] = [];
+      if (editUploadItems.length > 0) {
+        newlyUploadedUrls = await uploadImages(editUploadItems.map(i => i.file));
       }
 
-      if (editUploadItems.length > 0) {
-        const uploadPromises = editUploadItems.map(item => uploadSingleImageToR2(item.file));
-        const newUrls = await Promise.all(uploadPromises);
-        updatedImageUrls = [...updatedImageUrls, ...newUrls];
+      const updatedImageUrls = [...existingImages, ...newlyUploadedUrls];
+      if (updatedImageUrls.length === 0) {
+        alert('Product must have at least one image.');
+        setIsSavingEdit(false);
+        return;
       }
 
       const { data, error } = await supabase
         .from('products')
         .update({
           name: editName,
-          description: editDescription || null,
+          description: editDescription,
+          image_url: updatedImageUrls[0],
           original_price: editOriginalPrice ? parseFloat(editOriginalPrice) : null,
           discount_price: editDiscountPrice ? parseFloat(editDiscountPrice) : null,
           is_explore_collection: editIsExplore,
@@ -90,7 +119,7 @@ export default function AdminCategoryPage() {
       
       setProducts(products.map(p => p.id === editingProduct.id ? data : p));
       closeEditModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       alert('Failed to update product');
     } finally {
@@ -118,7 +147,37 @@ export default function AdminCategoryPage() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('category', category)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        if (isMounted) {
+          setProducts(data || []);
+        }
+      } catch (err: unknown) {
+        console.error('Error fetching products:', err);
+        if (isMounted) {
+          setFetchError('Unable to fetch products. Ensure Supabase is connected.');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [category]);
 
   // Global paste handler to paste images anywhere on the page
@@ -152,25 +211,6 @@ export default function AdminCategoryPage() {
     return () => window.removeEventListener('paste', handlePaste);
   }, [editingProduct]);
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('category', category)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (err: any) {
-      console.error('Error fetching products:', err);
-      setFetchError('Unable to fetch products. Ensure Supabase is connected.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (product: Product) => {
     if (!confirm(`Are you sure you want to remove "${product.name}"? This will delete the product and permanently remove its images from Cloudflare storage.`)) return;
     
@@ -199,7 +239,7 @@ export default function AdminCategoryPage() {
 
       // 4. Update UI
       setProducts(products.filter(p => p.id !== product.id));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting product:', err);
       alert('Failed to delete product. Please try again.');
     }
@@ -232,25 +272,6 @@ export default function AdminCategoryPage() {
       copy.unshift(item);
       return copy;
     });
-  };
-
-  const uploadSingleImageToR2 = async (file: File): Promise<string> => {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename: file.name, contentType: file.type }),
-    });
-    if (!res.ok) throw new Error('Failed to get upload URL from server');
-    const { uploadUrl, publicUrl } = await res.json();
-
-    const uploadRes = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': file.type },
-      body: file,
-    });
-    if (!uploadRes.ok) throw new Error('Failed to upload image to Cloudflare storage');
-
-    return publicUrl;
   };
 
   const calculateDiscountPercent = (orig: string, disc: string) => {
@@ -306,9 +327,10 @@ export default function AdminCategoryPage() {
       setUploadItems([]);
 
       setProducts([data, ...products]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setUploadError(err.message || 'An error occurred while saving the product.');
+      const msg = err instanceof Error ? err.message : 'An error occurred while saving the product.';
+      setUploadError(msg);
     } finally {
       setIsUploading(false);
     }
@@ -422,7 +444,7 @@ export default function AdminCategoryPage() {
                     className="w-4 h-4 accent-[#D4AF37] cursor-pointer rounded"
                   />
                   <span className="text-xs uppercase tracking-wider text-[#D4AF37] font-medium">
-                    Feature in "Explore Collection" on Homepage
+                    Feature in &quot;Explore Collection&quot; on Homepage
                   </span>
                 </label>
               </div>
@@ -497,7 +519,7 @@ export default function AdminCategoryPage() {
                     ))}
                   </div>
                   <p className="text-[10px] text-[#D4AF37]/60 italic">
-                    Tip: Hover over any photo and click "Set Cover" to make it the primary display image.
+                    Tip: Hover over any photo and click &quot;Set Cover&quot; to make it the primary display image.
                   </p>
                 </div>
               )}
@@ -686,7 +708,7 @@ export default function AdminCategoryPage() {
                     type="checkbox" checked={editIsExplore} onChange={e => setEditIsExplore(e.target.checked)}
                     className="w-4 h-4 accent-[#D4AF37]"
                   />
-                  <span className="text-xs uppercase tracking-wider text-[#D4AF37]">Feature in "Explore Collection"</span>
+                  <span className="text-xs uppercase tracking-wider text-[#D4AF37]">Feature in &quot;Explore Collection&quot;</span>
                 </label>
               </div>
 
