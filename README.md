@@ -1,6 +1,10 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JKK Silks
 
-## Getting Started
+Luxury South Indian Handcrafted Silk Sarees, Imitation Jewellery, and Heritage Artifacts.
+
+## Production Build & Deployment
+Built with Next.js 16 (Turbopack), Tailwind CSS, Supabase, and Cloudflare R2.
+
 
 First, run the development server:
 
