@@ -38,6 +38,20 @@ const LotusAnimation = () => (
   </div>
 );
 
+const FilterIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="21" x2="14" y1="4" y2="4" />
+    <line x1="10" x2="3" y1="4" y2="4" />
+    <line x1="21" x2="12" y1="12" y2="12" />
+    <line x1="8" x2="3" y1="12" y2="12" />
+    <line x1="21" x2="16" y1="20" y2="20" />
+    <line x1="12" x2="3" y1="20" y2="20" />
+    <line x1="14" x2="14" y1="2" y2="6" />
+    <line x1="8" x2="8" y1="10" y2="14" />
+    <line x1="16" x2="16" y1="18" y2="22" />
+  </svg>
+);
+
 const curatedCategories = {
   sarees: {
     id: 'sarees',
@@ -73,6 +87,38 @@ export default function CategoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
+  const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('default');
+
+  const priceRanges = [
+    { id: 'all', label: 'All Prices', min: 0, max: Infinity },
+    { id: 'under-5k', label: 'Under ₹5,000', min: 0, max: 5000 },
+    { id: '5k-15k', label: '₹5,000 – ₹15,000', min: 5000, max: 15000 },
+    { id: '15k-30k', label: '₹15,000 – ₹30,000', min: 15000, max: 30000 },
+    { id: 'above-30k', label: '₹30,000 & Above', min: 30000, max: Infinity },
+  ];
+
+  const getProductPrice = (p: Product) => {
+    return p.discount_price ?? p.original_price ?? 0;
+  };
+
+  const filteredProducts = products
+    .filter((product) => {
+      if (selectedPriceRange === 'all') return true;
+      const range = priceRanges.find((r) => r.id === selectedPriceRange);
+      if (!range) return true;
+      const price = getProductPrice(product);
+      return price >= range.min && (range.max === Infinity ? true : price < range.max);
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-asc') {
+        return getProductPrice(a) - getProductPrice(b);
+      }
+      if (sortBy === 'price-desc') {
+        return getProductPrice(b) - getProductPrice(a);
+      }
+      return 0;
+    });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -133,9 +179,60 @@ export default function CategoryPage() {
                 <p className="text-[#FFF8E7]/60 text-sm tracking-wide font-light">{categoryInfo.description}</p>
               </div>
 
-              {products.length > 0 ? (
+              {/* Cost-Based Filter & Sorting Bar */}
+              {products.length > 0 && (
+                <div className="w-full mb-8">
+                  <div className="bg-[#180106]/90 border border-[#D4AF37]/30 rounded-md p-3.5 sm:p-4 shadow-[0_0_20px_rgba(212,175,55,0.1)] backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                    
+                    {/* Price Range Filter Pills */}
+                    <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+                      <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-medium mr-1.5 whitespace-nowrap flex items-center gap-1.5">
+                        <FilterIcon className="w-3.5 h-3.5 text-[#D4AF37]" /> Price:
+                      </span>
+                      {priceRanges.map((range) => {
+                        const isSelected = selectedPriceRange === range.id;
+                        return (
+                          <button
+                            key={range.id}
+                            onClick={() => setSelectedPriceRange(range.id)}
+                            className={`px-3 py-1.5 rounded-full text-xs tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#D4AF37] text-[#210209] font-semibold shadow-[0_0_15px_rgba(212,175,55,0.35)] scale-105'
+                                : 'bg-[#120004] text-[#D4AF37]/80 hover:text-[#FFF8E7] border border-[#D4AF37]/30 hover:border-[#D4AF37]'
+                            }`}
+                          >
+                            {range.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Sort Dropdown & Count */}
+                    <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
+                      <span className="text-xs text-[#FFF8E7]/60 tracking-wider">
+                        {filteredProducts.length} {filteredProducts.length === 1 ? 'piece' : 'pieces'}
+                      </span>
+
+                      <div className="relative">
+                        <select
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value)}
+                          className="bg-[#120004] border border-[#D4AF37]/30 text-[#D4AF37] text-xs py-1.5 px-3 rounded-sm tracking-wider focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                        >
+                          <option value="default">Sort: Default</option>
+                          <option value="price-asc">Price: Low to High</option>
+                          <option value="price-desc">Price: High to Low</option>
+                        </select>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {products.map((product) => (
+                  {filteredProducts.map((product) => (
                     <Link 
                       href={`/product/${product.id}`} 
                       key={product.id}
@@ -172,6 +269,17 @@ export default function CategoryPage() {
                       </div>
                     </Link>
                   ))}
+                </div>
+              ) : products.length > 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="font-serif text-2xl text-[#D4AF37] mb-2">No Sarees In This Price Range</p>
+                  <p className="text-xs text-[#FFF8E7]/60 tracking-wider mb-6">Try selecting another cost bracket or reset your filter.</p>
+                  <button
+                    onClick={() => { setSelectedPriceRange('all'); setSortBy('default'); }}
+                    className="border border-[#D4AF37] bg-[#D4AF37] text-[#210209] font-medium hover:bg-[#E5C158] px-6 py-2.5 text-xs uppercase tracking-widest rounded-sm transition-all cursor-pointer shadow-md"
+                  >
+                    Reset Price Filters
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
