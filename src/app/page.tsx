@@ -173,35 +173,11 @@ export default function Home() {
               </a>
             </div>
 
-            <div className="flex items-center gap-3">
-              {/* Instagram Profile */}
-              <a 
-                href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
-                target="_blank" 
-                rel="noreferrer"
-                className="text-[#D4AF37]/80 hover:text-[#D4AF37] hover:scale-110 transition-transform p-1.5 rounded-full hover:bg-[#D4AF37]/10"
-                title="Follow JKK Silks on Instagram"
-                aria-label="Instagram"
-              >
-                <InstagramIcon className="w-4 h-4" />
-              </a>
-
-              {/* WhatsApp Chat Button */}
-              <a 
-                href="https://wa.me/916309143484" 
-                target="_blank" 
-                rel="noreferrer"
-                className="hidden sm:flex items-center gap-1.5 border border-[#D4AF37]/40 hover:border-[#D4AF37] px-3 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-                title="Chat on WhatsApp"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>+91 6309 143 484</span>
-              </a>
-
-              {/* Formal Enquiry Button */}
+            {/* Action CTA Button */}
+            <div className="flex items-center gap-4">
               <button 
                 onClick={() => setEnquiryModalOpen(true)}
-                className="flex items-center gap-1.5 border border-[#D4AF37] px-3.5 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] hover:bg-[#E5C158] font-semibold transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
+                className="hidden sm:flex items-center gap-2 border border-[#D4AF37] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] hover:bg-[#E5C158] font-semibold transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Enquire</span>
