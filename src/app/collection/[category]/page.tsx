@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -89,6 +89,7 @@ export default function CategoryPage() {
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('default');
+  const [sliderPrice, setSliderPrice] = useState<number | null>(null);
 
   const priceRanges = [
     { id: 'all', label: 'All Prices', min: 0, max: Infinity },
@@ -102,23 +103,56 @@ export default function CategoryPage() {
     return p.discount_price ?? p.original_price ?? 0;
   };
 
-  const filteredProducts = products
-    .filter((product) => {
-      if (selectedPriceRange === 'all') return true;
-      const range = priceRanges.find((r) => r.id === selectedPriceRange);
-      if (!range) return true;
-      const price = getProductPrice(product);
-      return price >= range.min && (range.max === Infinity ? true : price < range.max);
-    })
-    .sort((a, b) => {
-      if (sortBy === 'price-asc') {
-        return getProductPrice(a) - getProductPrice(b);
-      }
-      if (sortBy === 'price-desc') {
-        return getProductPrice(b) - getProductPrice(a);
-      }
-      return 0;
-    });
+  const maxProductPrice = useMemo(() => {
+    if (products.length === 0) return 50000;
+    const max = Math.max(...products.map(getProductPrice));
+    return Math.max(Math.ceil((max || 50000) / 5000) * 5000, 25000);
+  }, [products]);
+
+  const sliderPercentage = maxProductPrice > 0 
+    ? Math.min(100, Math.max(0, Math.round(((sliderPrice ?? maxProductPrice) / maxProductPrice) * 100))) 
+    : 100;
+
+  const isFilterActive = selectedPriceRange !== 'all' || (sliderPrice !== null && sliderPrice < maxProductPrice);
+
+  const handleReset = () => {
+    setSelectedPriceRange('all');
+    setSliderPrice(null);
+    setSortBy('default');
+  };
+
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((product) => {
+        const price = getProductPrice(product);
+
+        // Filter by Slider Bar Price Limit
+        if (sliderPrice !== null && sliderPrice < maxProductPrice) {
+          if (price > sliderPrice) return false;
+        }
+
+        // Filter by Price Range Preset
+        if (selectedPriceRange !== 'all') {
+          const range = priceRanges.find((r) => r.id === selectedPriceRange);
+          if (range) {
+            if (price < range.min || (range.max !== Infinity && price >= range.max)) {
+              return false;
+            }
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'price-asc') {
+          return getProductPrice(a) - getProductPrice(b);
+        }
+        if (sortBy === 'price-desc') {
+          return getProductPrice(b) - getProductPrice(a);
+        }
+        return 0;
+      });
+  }, [products, sliderPrice, maxProductPrice, selectedPriceRange, sortBy]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -181,49 +215,123 @@ export default function CategoryPage() {
 
               {/* Cost-Based Filter & Sorting Bar */}
               {products.length > 0 && (
-                <div className="w-full mb-8">
-                  <div className="bg-[#180106]/90 border border-[#D4AF37]/30 rounded-md p-3.5 sm:p-4 shadow-[0_0_20px_rgba(212,175,55,0.1)] backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="w-full mb-10">
+                  <div className="bg-[#180106]/95 border border-[#D4AF37]/35 rounded-lg p-4 sm:p-5 shadow-[0_4px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(212,175,55,0.12)] backdrop-blur-md flex flex-col gap-4">
                     
-                    {/* Price Range Filter Pills */}
-                    <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
-                      <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-medium mr-1.5 whitespace-nowrap flex items-center gap-1.5">
-                        <FilterIcon className="w-3.5 h-3.5 text-[#D4AF37]" /> Price:
-                      </span>
-                      {priceRanges.map((range) => {
-                        const isSelected = selectedPriceRange === range.id;
-                        return (
+                    {/* Top Row: Slider Header & Live Budget Readout & Reset */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D4AF37]/20 pb-3">
+                      <div className="flex items-center gap-2">
+                        <FilterIcon className="w-4 h-4 text-[#D4AF37]" />
+                        <span className="text-xs uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
+                          Price Filter Bar
+                        </span>
+                        {isFilterActive && (
                           <button
-                            key={range.id}
-                            onClick={() => setSelectedPriceRange(range.id)}
-                            className={`px-3 py-1.5 rounded-full text-xs tracking-wider transition-all whitespace-nowrap cursor-pointer ${
-                              isSelected
-                                ? 'bg-[#D4AF37] text-[#210209] font-semibold shadow-[0_0_15px_rgba(212,175,55,0.35)] scale-105'
-                                : 'bg-[#120004] text-[#D4AF37]/80 hover:text-[#FFF8E7] border border-[#D4AF37]/30 hover:border-[#D4AF37]'
-                            }`}
+                            onClick={handleReset}
+                            className="text-[11px] text-[#D4AF37]/80 hover:text-[#FFF8E7] bg-[#2A050D] hover:bg-[#3D0A14] border border-[#D4AF37]/30 px-2.5 py-0.5 rounded-full transition-all cursor-pointer ml-1.5"
                           >
-                            {range.label}
+                            Reset
                           </button>
-                        );
-                      })}
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[#FFF8E7]/70 font-light tracking-wide">Selected Limit:</span>
+                        <span className="text-xs font-semibold text-[#D4AF37] bg-[#120004] px-3 py-1 rounded-md border border-[#D4AF37]/40 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+                          {sliderPrice === null || sliderPrice >= maxProductPrice
+                            ? `All Prices (Up to ₹${maxProductPrice.toLocaleString('en-IN')}+)`
+                            : `Up to ₹${sliderPrice.toLocaleString('en-IN')}`}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Sort Dropdown & Count */}
-                    <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
-                      <span className="text-xs text-[#FFF8E7]/60 tracking-wider">
-                        {filteredProducts.length} {filteredProducts.length === 1 ? 'piece' : 'pieces'}
-                      </span>
-
-                      <div className="relative">
-                        <select
-                          value={sortBy}
-                          onChange={(e) => setSortBy(e.target.value)}
-                          className="bg-[#120004] border border-[#D4AF37]/30 text-[#D4AF37] text-xs py-1.5 px-3 rounded-sm tracking-wider focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                        >
-                          <option value="default">Sort: Default</option>
-                          <option value="price-asc">Price: Low to High</option>
-                          <option value="price-desc">Price: High to Low</option>
-                        </select>
+                    {/* Middle Row: The Interactive Scroll / Slide Range Bar */}
+                    <div className="flex flex-col gap-1.5 px-1">
+                      <div className="relative flex items-center gap-3 w-full">
+                        <span className="text-[11px] font-mono text-[#D4AF37]/70 tracking-wider">₹0</span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={maxProductPrice}
+                          step={1000}
+                          value={sliderPrice ?? maxProductPrice}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setSliderPrice(val);
+                            setSelectedPriceRange('all');
+                          }}
+                          className="gold-slider flex-1"
+                          style={{
+                            background: `linear-gradient(90deg, #D4AF37 0%, #D4AF37 ${sliderPercentage}%, rgba(212, 175, 55, 0.2) ${sliderPercentage}%)`
+                          }}
+                          aria-label="Price range filter"
+                        />
+                        <span className="text-[11px] font-mono text-[#D4AF37]/70 tracking-wider whitespace-nowrap">
+                          ₹{maxProductPrice.toLocaleString('en-IN')}+
+                        </span>
                       </div>
+                      <p className="text-[10px] text-[#FFF8E7]/40 tracking-wider text-center sm:text-left">
+                        Scroll or slide the gold bar to filter sarees by price
+                      </p>
+                    </div>
+
+                    {/* Bottom Row: Quick Presets (Scrollable Bar) & Sort / Count */}
+                    <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pt-1 border-t border-[#D4AF37]/15">
+                      
+                      {/* Scrollable Price Brackets Bar */}
+                      <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 gold-scrollbar scroll-smooth">
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-[#D4AF37]/80 font-medium mr-1 whitespace-nowrap">
+                          Presets:
+                        </span>
+                        {priceRanges.map((range) => {
+                          const isSelected = selectedPriceRange === range.id;
+                          return (
+                            <button
+                              key={range.id}
+                              onClick={() => {
+                                if (selectedPriceRange === range.id) {
+                                  setSelectedPriceRange('all');
+                                  setSliderPrice(null);
+                                } else {
+                                  setSelectedPriceRange(range.id);
+                                  if (range.max !== Infinity) {
+                                    setSliderPrice(range.max);
+                                  } else {
+                                    setSliderPrice(null);
+                                  }
+                                }
+                              }}
+                              className={`px-3 py-1 rounded-full text-[11px] tracking-wider transition-all whitespace-nowrap cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#D4AF37] text-[#210209] font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105'
+                                  : 'bg-[#120004] text-[#D4AF37]/80 hover:text-[#FFF8E7] border border-[#D4AF37]/30 hover:border-[#D4AF37]'
+                              }`}
+                            >
+                              {range.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Sort Dropdown & Product Counter */}
+                      <div className="flex items-center justify-between lg:justify-end gap-3 shrink-0">
+                        <span className="text-xs text-[#FFF8E7]/60 tracking-wider whitespace-nowrap">
+                          Showing <strong className="text-[#D4AF37] font-semibold">{filteredProducts.length}</strong> of {products.length} {products.length === 1 ? 'piece' : 'pieces'}
+                        </span>
+
+                        <div className="relative">
+                          <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="bg-[#120004] border border-[#D4AF37]/35 text-[#D4AF37] text-xs py-1.5 px-3 rounded-sm tracking-wider focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                          >
+                            <option value="default">Sort: Default</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="price-desc">Price: High to Low</option>
+                          </select>
+                        </div>
+                      </div>
+
                     </div>
 
                   </div>
@@ -273,10 +381,10 @@ export default function CategoryPage() {
               ) : products.length > 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <p className="font-serif text-2xl text-[#D4AF37] mb-2">No Sarees In This Price Range</p>
-                  <p className="text-xs text-[#FFF8E7]/60 tracking-wider mb-6">Try selecting another cost bracket or reset your filter.</p>
+                  <p className="text-xs text-[#FFF8E7]/60 tracking-wider mb-6">Try sliding the price bar or reset your filter.</p>
                   <button
-                    onClick={() => { setSelectedPriceRange('all'); setSortBy('default'); }}
-                    className="border border-[#D4AF37] bg-[#D4AF37] text-[#210209] font-medium hover:bg-[#E5C158] px-6 py-2.5 text-xs uppercase tracking-widest rounded-sm transition-all cursor-pointer shadow-md"
+                    onClick={handleReset}
+                    className="border border-[#D4AF37] bg-[#D4AF37] text-[#210209] font-semibold hover:bg-[#E5C158] px-6 py-2.5 text-xs uppercase tracking-widest rounded-sm transition-all cursor-pointer shadow-md"
                   >
                     Reset Price Filters
                   </button>

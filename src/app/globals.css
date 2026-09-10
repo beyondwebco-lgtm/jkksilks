@@ -75,3 +75,81 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
   animation: goldGlowDot ease-in-out infinite alternate;
 }
+
+/* Luxury Gold Price Range Slider */
+.gold-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+  background-color: rgba(212, 175, 55, 0.2);
+}
+
+.gold-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+}
+
+.gold-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFF8E7 0%, #F3E5AB 30%, #D4AF37 70%, #8A5F14 100%);
+  border: 2px solid #180106;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.75), 0 2px 5px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gold-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.95), 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.gold-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.25);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 1), 0 3px 8px rgba(0, 0, 0, 0.8);
+}
+
+.gold-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFF8E7 0%, #F3E5AB 30%, #D4AF37 70%, #8A5F14 100%);
+  border: 2px solid #180106;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.75), 0 2px 5px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+}
+
+/* Custom Gold Scrollbar */
+.gold-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.5) rgba(24, 1, 6, 0.6);
+}
+
+.gold-scrollbar::-webkit-scrollbar {
+  height: 5px;
+}
+
+.gold-scrollbar::-webkit-scrollbar-track {
+  background: rgba(24, 1, 6, 0.6);
+  border-radius: 9999px;
+}
+
+.gold-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #996515, #D4AF37, #996515);
+  border-radius: 9999px;
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+}
+
+.gold-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #E5C158;
+}
+
