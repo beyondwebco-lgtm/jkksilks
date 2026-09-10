@@ -189,58 +189,64 @@ export default function CategoryPage() {
 
       </main>
 
-      {/* Footer with Mail & Instagram Logos, Contact Us, and Address */}
-      <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 pt-10 pb-12 px-4 sm:px-6 lg:px-8 text-center text-[#D4AF37]/70">
-        <div className="max-w-4xl mx-auto flex flex-col items-center gap-5">
-          {/* Logos of Mail and Instagram */}
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => setEnquiryModalOpen(true)}
-              className="w-10 h-10 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-              title="Email Enquiry"
-              aria-label="Email"
-            >
-              <Mail className="w-4 h-4" />
-            </button>
-
-            <a 
-              href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
-              target="_blank" 
-              rel="noreferrer"
-              className="w-10 h-10 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-              title="Instagram"
-              aria-label="Instagram"
-            >
-              <InstagramIcon className="w-4 h-4" />
-            </a>
-          </div>
-
-          {/* Contact Us & Phone Number */}
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-xs uppercase tracking-[0.25em] text-[#D4AF37] font-medium">
-              Contact Us
-            </span>
-            <a 
-              href="https://wa.me/916309143484" 
-              target="_blank" 
-              rel="noreferrer"
-              className="text-sm font-medium text-[#FFF8E7] hover:text-[#25D366] transition-colors tracking-widest"
-            >
-              +91 6309 143 484
-            </a>
-          </div>
-
-          {/* Address */}
-          <p className="text-xs text-[#FFF8E7]/70 tracking-[0.2em] uppercase font-light">
-            Wyra, Khammam
-          </p>
-
-          {/* Bottom Bar: Copyright | Return to Storefront */}
-          <div className="pt-6 border-t border-[#D4AF37]/15 w-full flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#D4AF37]/50 tracking-widest uppercase gap-2">
+      {/* Sleek Horizontal Footer Bar */}
+      <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 py-6 px-4 sm:px-6 lg:px-8 text-[#D4AF37]/70">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Left: Copyright & Return link */}
+          <div className="flex items-center gap-4 text-[11px] uppercase tracking-widest text-[#D4AF37]/60">
             <p>&copy; {new Date().getFullYear()} JKK Silks. All Rights Reserved.</p>
-            <Link href="/" className="hover:text-[#D4AF37] transition-colors">
+            <span>&bull;</span>
+            <Link href="/" className="text-[#D4AF37]/80 hover:text-[#FFF8E7] transition-colors">
               Return to Storefront
             </Link>
+          </div>
+
+          {/* Right in series: Address | Contact Us | Logos */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2 text-xs">
+            {/* Address */}
+            <span className="text-[11px] uppercase tracking-[0.2em] text-[#FFF8E7]/70">
+              Wyra, Khammam
+            </span>
+
+            <span className="hidden sm:inline text-[#D4AF37]/30">&bull;</span>
+
+            {/* Contact Us & Phone */}
+            <div className="flex items-center gap-1.5 text-[11px] tracking-wider">
+              <span className="uppercase text-[#D4AF37] font-medium tracking-widest">Contact Us:</span>
+              <a 
+                href="https://wa.me/916309143484" 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-[#FFF8E7] hover:text-[#25D366] transition-colors font-medium tracking-wider"
+              >
+                +91 6309 143 484
+              </a>
+            </div>
+
+            <span className="hidden sm:inline text-[#D4AF37]/30">&bull;</span>
+
+            {/* Logos of Mail and Instagram */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setEnquiryModalOpen(true)}
+                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+                title="Email Enquiry"
+                aria-label="Email"
+              >
+                <Mail className="w-3.5 h-3.5" />
+              </button>
+
+              <a 
+                href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
+                target="_blank" 
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+                title="Instagram"
+                aria-label="Instagram"
+              >
+                <InstagramIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
         </div>
       </footer>
