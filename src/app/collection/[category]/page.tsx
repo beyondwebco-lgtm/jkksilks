@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -38,20 +38,6 @@ const LotusAnimation = () => (
   </div>
 );
 
-const FilterIcon = ({ className = "w-3.5 h-3.5" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="21" x2="14" y1="4" y2="4" />
-    <line x1="10" x2="3" y1="4" y2="4" />
-    <line x1="21" x2="12" y1="12" y2="12" />
-    <line x1="8" x2="3" y1="12" y2="12" />
-    <line x1="21" x2="16" y1="20" y2="20" />
-    <line x1="12" x2="3" y1="20" y2="20" />
-    <line x1="14" x2="14" y1="2" y2="6" />
-    <line x1="8" x2="8" y1="10" y2="14" />
-    <line x1="16" x2="16" y1="18" y2="22" />
-  </svg>
-);
-
 const curatedCategories = {
   sarees: {
     id: 'sarees',
@@ -87,72 +73,6 @@ export default function CategoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
-  const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('default');
-  const [sliderPrice, setSliderPrice] = useState<number | null>(null);
-
-  const priceRanges = [
-    { id: 'all', label: 'All Prices', min: 0, max: Infinity },
-    { id: 'under-5k', label: 'Under ₹5,000', min: 0, max: 5000 },
-    { id: '5k-15k', label: '₹5,000 – ₹15,000', min: 5000, max: 15000 },
-    { id: '15k-30k', label: '₹15,000 – ₹30,000', min: 15000, max: 30000 },
-    { id: 'above-30k', label: '₹30,000 & Above', min: 30000, max: Infinity },
-  ];
-
-  const getProductPrice = (p: Product) => {
-    return p.discount_price ?? p.original_price ?? 0;
-  };
-
-  const maxProductPrice = useMemo(() => {
-    if (products.length === 0) return 50000;
-    const max = Math.max(...products.map(getProductPrice));
-    return Math.max(Math.ceil((max || 50000) / 5000) * 5000, 25000);
-  }, [products]);
-
-  const sliderPercentage = maxProductPrice > 0 
-    ? Math.min(100, Math.max(0, Math.round(((sliderPrice ?? maxProductPrice) / maxProductPrice) * 100))) 
-    : 100;
-
-  const isFilterActive = selectedPriceRange !== 'all' || (sliderPrice !== null && sliderPrice < maxProductPrice);
-
-  const handleReset = () => {
-    setSelectedPriceRange('all');
-    setSliderPrice(null);
-    setSortBy('default');
-  };
-
-  const filteredProducts = useMemo(() => {
-    return products
-      .filter((product) => {
-        const price = getProductPrice(product);
-
-        // Filter by Slider Bar Price Limit
-        if (sliderPrice !== null && sliderPrice < maxProductPrice) {
-          if (price > sliderPrice) return false;
-        }
-
-        // Filter by Price Range Preset
-        if (selectedPriceRange !== 'all') {
-          const range = priceRanges.find((r) => r.id === selectedPriceRange);
-          if (range) {
-            if (price < range.min || (range.max !== Infinity && price >= range.max)) {
-              return false;
-            }
-          }
-        }
-
-        return true;
-      })
-      .sort((a, b) => {
-        if (sortBy === 'price-asc') {
-          return getProductPrice(a) - getProductPrice(b);
-        }
-        if (sortBy === 'price-desc') {
-          return getProductPrice(b) - getProductPrice(a);
-        }
-        return 0;
-      });
-  }, [products, sliderPrice, maxProductPrice, selectedPriceRange, sortBy]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -208,139 +128,14 @@ export default function CategoryPage() {
           <div className="w-full flex flex-col mt-8">
             <section className="w-full max-w-7xl mx-auto px-4">
               <div className="text-center mb-10 flex flex-col items-center">
-                <LotusIcon className="w-9 h-9 mb-2.5 opacity-95 filter drop-shadow-[0_2px_10px_rgba(212,175,55,0.4)]" />
+                <LotusIcon className="w-9 h-9 mb-2.5 opacity-95" />
                 <h2 className="text-[#D4AF37] font-serif text-3xl mb-3">{categoryInfo.name}</h2>
                 <p className="text-[#FFF8E7]/60 text-sm tracking-wide font-light">{categoryInfo.description}</p>
               </div>
 
-              {/* Cost-Based Filter & Sorting Bar */}
-              {products.length > 0 && (
-                <div className="w-full mb-10">
-                  <div className="bg-[#180106]/95 border border-[#D4AF37]/35 rounded-lg p-4 sm:p-5 shadow-[0_4px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(212,175,55,0.12)] backdrop-blur-md flex flex-col gap-4">
-                    
-                    {/* Top Row: Slider Header & Live Budget Readout & Reset */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D4AF37]/20 pb-3">
-                      <div className="flex items-center gap-2">
-                        <FilterIcon className="w-4 h-4 text-[#D4AF37]" />
-                        <span className="text-xs uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
-                          Price Filter Bar
-                        </span>
-                        {isFilterActive && (
-                          <button
-                            onClick={handleReset}
-                            className="text-[11px] text-[#D4AF37]/80 hover:text-[#FFF8E7] bg-[#2A050D] hover:bg-[#3D0A14] border border-[#D4AF37]/30 px-2.5 py-0.5 rounded-full transition-all cursor-pointer ml-1.5"
-                          >
-                            Reset
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#FFF8E7]/70 font-light tracking-wide">Selected Limit:</span>
-                        <span className="text-xs font-semibold text-[#D4AF37] bg-[#120004] px-3 py-1 rounded-md border border-[#D4AF37]/40 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
-                          {sliderPrice === null || sliderPrice >= maxProductPrice
-                            ? `All Prices (Up to ₹${maxProductPrice.toLocaleString('en-IN')}+)`
-                            : `Up to ₹${sliderPrice.toLocaleString('en-IN')}`}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Middle Row: The Interactive Scroll / Slide Range Bar */}
-                    <div className="flex flex-col gap-1.5 px-1">
-                      <div className="relative flex items-center gap-3 w-full">
-                        <span className="text-[11px] font-mono text-[#D4AF37]/70 tracking-wider">₹0</span>
-                        <input
-                          type="range"
-                          min={0}
-                          max={maxProductPrice}
-                          step={1000}
-                          value={sliderPrice ?? maxProductPrice}
-                          onChange={(e) => {
-                            const val = Number(e.target.value);
-                            setSliderPrice(val);
-                            setSelectedPriceRange('all');
-                          }}
-                          className="gold-slider flex-1"
-                          style={{
-                            background: `linear-gradient(90deg, #D4AF37 0%, #D4AF37 ${sliderPercentage}%, rgba(212, 175, 55, 0.2) ${sliderPercentage}%)`
-                          }}
-                          aria-label="Price range filter"
-                        />
-                        <span className="text-[11px] font-mono text-[#D4AF37]/70 tracking-wider whitespace-nowrap">
-                          ₹{maxProductPrice.toLocaleString('en-IN')}+
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-[#FFF8E7]/40 tracking-wider text-center sm:text-left">
-                        Scroll or slide the gold bar to filter sarees by price
-                      </p>
-                    </div>
-
-                    {/* Bottom Row: Quick Presets (Scrollable Bar) & Sort / Count */}
-                    <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pt-1 border-t border-[#D4AF37]/15">
-                      
-                      {/* Scrollable Price Brackets Bar */}
-                      <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 gold-scrollbar scroll-smooth">
-                        <span className="text-[11px] uppercase tracking-[0.2em] text-[#D4AF37]/80 font-medium mr-1 whitespace-nowrap">
-                          Presets:
-                        </span>
-                        {priceRanges.map((range) => {
-                          const isSelected = selectedPriceRange === range.id;
-                          return (
-                            <button
-                              key={range.id}
-                              onClick={() => {
-                                if (selectedPriceRange === range.id) {
-                                  setSelectedPriceRange('all');
-                                  setSliderPrice(null);
-                                } else {
-                                  setSelectedPriceRange(range.id);
-                                  if (range.max !== Infinity) {
-                                    setSliderPrice(range.max);
-                                  } else {
-                                    setSliderPrice(null);
-                                  }
-                                }
-                              }}
-                              className={`px-3 py-1 rounded-full text-[11px] tracking-wider transition-all whitespace-nowrap cursor-pointer ${
-                                isSelected
-                                  ? 'bg-[#D4AF37] text-[#210209] font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105'
-                                  : 'bg-[#120004] text-[#D4AF37]/80 hover:text-[#FFF8E7] border border-[#D4AF37]/30 hover:border-[#D4AF37]'
-                              }`}
-                            >
-                              {range.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Sort Dropdown & Product Counter */}
-                      <div className="flex items-center justify-between lg:justify-end gap-3 shrink-0">
-                        <span className="text-xs text-[#FFF8E7]/60 tracking-wider whitespace-nowrap">
-                          Showing <strong className="text-[#D4AF37] font-semibold">{filteredProducts.length}</strong> of {products.length} {products.length === 1 ? 'piece' : 'pieces'}
-                        </span>
-
-                        <div className="relative">
-                          <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-[#120004] border border-[#D4AF37]/35 text-[#D4AF37] text-xs py-1.5 px-3 rounded-sm tracking-wider focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                          >
-                            <option value="default">Sort: Default</option>
-                            <option value="price-asc">Price: Low to High</option>
-                            <option value="price-desc">Price: High to Low</option>
-                          </select>
-                        </div>
-                      </div>
-
-                    </div>
-
-                  </div>
-                </div>
-              )}
-
-              {filteredProducts.length > 0 ? (
+              {products.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {filteredProducts.map((product) => (
+                  {products.map((product) => (
                     <Link 
                       href={`/product/${product.id}`} 
                       key={product.id}
@@ -377,17 +172,6 @@ export default function CategoryPage() {
                       </div>
                     </Link>
                   ))}
-                </div>
-              ) : products.length > 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <p className="font-serif text-2xl text-[#D4AF37] mb-2">No Sarees In This Price Range</p>
-                  <p className="text-xs text-[#FFF8E7]/60 tracking-wider mb-6">Try sliding the price bar or reset your filter.</p>
-                  <button
-                    onClick={handleReset}
-                    className="border border-[#D4AF37] bg-[#D4AF37] text-[#210209] font-semibold hover:bg-[#E5C158] px-6 py-2.5 text-xs uppercase tracking-widest rounded-sm transition-all cursor-pointer shadow-md"
-                  >
-                    Reset Price Filters
-                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center">

@@ -72,7 +72,6 @@ export default function Home() {
         const { data, error } = await supabase
           .from('products')
           .select('*')
-          .eq('is_explore_collection', true)
           .order('created_at', { ascending: false });
 
         if (!error && data) {
@@ -253,7 +252,7 @@ export default function Home() {
                 alt="Left Decorative Golden Branch"
                 width={1024}
                 height={682}
-                className="w-full h-auto object-contain filter drop-shadow-[0_8px_30px_rgba(212,175,55,0.35)]"
+                className="w-full h-auto object-contain"
                 priority
               />
               
@@ -311,7 +310,7 @@ export default function Home() {
                 alt="Right Decorative Golden Branch"
                 width={1024}
                 height={682}
-                className="w-full h-auto object-contain filter drop-shadow-[0_8px_30px_rgba(212,175,55,0.35)]"
+                className="w-full h-auto object-contain"
                 priority
               />
               
@@ -356,7 +355,7 @@ export default function Home() {
           <div className="w-full flex flex-col -mt-2 sm:-mt-6">
             <section className="w-full max-w-7xl mx-auto px-4">
               <div className="text-center mb-8 flex flex-col items-center">
-                <LotusIcon className="w-8 h-8 sm:w-9 sm:h-9 mb-2 opacity-95 filter drop-shadow-[0_2px_10px_rgba(212,175,55,0.4)]" />
+                <LotusIcon className="w-8 h-8 sm:w-9 sm:h-9 mb-2 opacity-95" />
                 <h2 className="text-[#D4AF37] font-serif text-2xl sm:text-3xl mb-2">Explore Collection</h2>
                 <p className="text-[#FFF8E7]/60 text-xs sm:text-sm tracking-wide font-light">Handpicked treasures curated just for you</p>
               </div>
