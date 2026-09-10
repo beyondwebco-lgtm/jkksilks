@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -10,6 +10,12 @@ const cormorantGaramond = Cormorant_Garamond({
 const outfit = Outfit({
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: "JKK Silks - Luxury Saree E-Commerce",

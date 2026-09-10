@@ -125,17 +125,17 @@ export default function Home() {
       </div>
 
       {/* Navigation & Brand Logo */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative">
+      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative">
         <div className="grid grid-cols-3 items-center w-full">
           
-          {/* Left: Sarees & Jewellery Nav Links */}
+          {/* Left: Sarees & Jewellery Nav Links on desktop, Menu on mobile */}
           <div className="flex items-center justify-start lg:justify-end lg:pr-12 w-full">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1 text-[#D4AF37] hover:text-[#FFF8E7] transition-colors"
+              className="lg:hidden p-2 -ml-2 text-[#D4AF37] hover:text-[#FFF8E7] transition-colors rounded-full hover:bg-[#D4AF37]/10 active:scale-95 cursor-pointer"
               aria-label="Toggle navigation menu"
             >
-              <Menu className="h-6 w-6" />
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
             <div className="hidden lg:flex gap-10 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
               <NavLink text="Sarees" href="/collection/sarees" />
@@ -143,10 +143,10 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Center: Exactly Centered Logo */}
-          <div className="flex justify-center my-2">
+          {/* Center: Exactly Centered Responsive Logo */}
+          <div className="flex justify-center my-1 sm:my-2">
             <Link href="/" className="group">
-              <div className="relative h-36 w-36 sm:h-44 sm:w-44 md:h-48 md:w-48 rounded-full overflow-hidden shadow-[0_0_40px_rgba(212,175,55,0.15)] border-2 border-[#D4AF37]/30 group-hover:border-[#D4AF37] transition-all">
+              <div className="relative h-24 w-24 sm:h-36 sm:w-36 md:h-44 md:w-44 lg:h-48 lg:w-48 rounded-full overflow-hidden shadow-[0_0_30px_rgba(212,175,55,0.2)] border-2 border-[#D4AF37]/40 group-hover:border-[#D4AF37] transition-all">
                 <Image 
                   src="/images/logo.jpg" 
                   alt="JKK Silks Logo" 
@@ -158,8 +158,16 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Right: Heritage & Enquire */}
+          {/* Right: Heritage & Enquire (Desktop) & Quick Enquire Mail button (Mobile) */}
           <div className="flex items-center justify-end lg:justify-start lg:pl-12 w-full">
+            <button
+              onClick={() => setEnquiryModalOpen(true)}
+              className="lg:hidden p-2 -mr-2 text-[#D4AF37] hover:text-[#FFF8E7] transition-colors rounded-full hover:bg-[#D4AF37]/10 active:scale-95 cursor-pointer"
+              aria-label="Open formal enquiry"
+              title="Enquire"
+            >
+              <Mail className="h-5 w-5" />
+            </button>
             <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
               <NavLink text="Heritage" href="/collection/heritage" />
 
@@ -177,33 +185,36 @@ export default function Home() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 z-50 bg-[#1A0106]/98 backdrop-blur-md border-b border-[#D4AF37]/30 px-6 py-6 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-            <div className="flex flex-col gap-4 text-xs font-medium uppercase tracking-[0.25em]">
+          <div className="lg:hidden absolute top-full left-0 right-0 z-50 bg-[#1A0106]/98 backdrop-blur-md border-b border-[#D4AF37]/30 px-6 py-6 shadow-[0_10px_30px_rgba(0,0,0,0.8)] animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col gap-3.5 text-xs font-medium uppercase tracking-[0.25em]">
               <Link 
                 href="/collection/sarees" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
+                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37] flex items-center justify-between"
               >
-                ✦ Pure Sarees
+                <span>✦ Pure Sarees</span>
+                <span className="text-[10px] text-[#FFF8E7]/40 tracking-widest font-normal">Explore &rarr;</span>
               </Link>
               <Link 
                 href="/collection/jewellery" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
+                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37] flex items-center justify-between"
               >
-                ✤ Imitation Jewellery
+                <span>✤ Imitation Jewellery</span>
+                <span className="text-[10px] text-[#FFF8E7]/40 tracking-widest font-normal">Explore &rarr;</span>
               </Link>
               <Link 
                 href="/collection/heritage" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
+                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37] flex items-center justify-between"
               >
-                ✺ Heritage Artifacts
+                <span>✺ Heritage Artifacts</span>
+                <span className="text-[10px] text-[#FFF8E7]/40 tracking-widest font-normal">Explore &rarr;</span>
               </Link>
               <a 
                 href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
                 target="_blank" 
-                rel="noreferrer"
+                rel="noreferrer" 
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-2 py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
               >
@@ -212,9 +223,9 @@ export default function Home() {
               <a 
                 href="https://wa.me/916309143484" 
                 target="_blank" 
-                rel="noreferrer"
+                rel="noreferrer" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="inline-flex items-center justify-center gap-2 border border-[#25D366] text-white bg-[#25D366] px-4 py-2.5 mt-2 rounded-sm text-xs uppercase tracking-wider font-semibold shadow-md"
+                className="inline-flex items-center justify-center gap-2 border border-[#25D366] text-white bg-[#25D366] px-4 py-3 mt-1 rounded-sm text-xs uppercase tracking-wider font-semibold shadow-md active:scale-[0.98] transition-transform"
               >
                 <MessageCircle className="w-4 h-4" /> WhatsApp: +91 6309 143 484
               </a>
@@ -223,7 +234,7 @@ export default function Home() {
                   setMobileMenuOpen(false);
                   setEnquiryModalOpen(true);
                 }}
-                className="inline-flex items-center justify-center gap-2 border border-[#D4AF37] px-4 py-2.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] font-semibold cursor-pointer shadow-md"
+                className="inline-flex items-center justify-center gap-2 border border-[#D4AF37] px-4 py-3 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] font-semibold cursor-pointer shadow-md active:scale-[0.98] transition-transform"
               >
                 <Mail className="w-4 h-4" /> Formal Enquiry
               </button>
@@ -233,19 +244,19 @@ export default function Home() {
       </header>
 
       {/* Ornate Divider */}
-      <div className="w-full max-w-4xl mx-auto flex items-center justify-center gap-4 pt-1 pb-6 opacity-70">
+      <div className="w-full max-w-4xl mx-auto flex items-center justify-center gap-4 pt-1 pb-4 sm:pb-6 px-4 opacity-70">
         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
-        <LotusIcon className="w-10 h-10" />
+        <LotusIcon className="w-8 h-8 sm:w-10 sm:h-10" />
         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full flex flex-col items-center pb-32">
+      <main className="flex-1 w-full flex flex-col items-center pb-24 sm:pb-32">
         
         {/* Full-width Hero Section with Large Flanking Golden Branches Connected to Page Ends */}
-        <section className="relative w-full overflow-hidden flex items-center justify-center min-h-[240px] md:min-h-[300px] lg:min-h-[340px] pt-4 pb-2 md:pt-6 md:pb-4 my-0">
+        <section className="relative w-full overflow-hidden flex items-center justify-center min-h-[220px] sm:min-h-[260px] md:min-h-[300px] lg:min-h-[340px] pt-4 pb-4 md:pt-6 md:pb-4 my-0">
           {/* Left Golden Branch & Glowing Dots - connected directly to left edge of page */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-32 sm:w-56 md:w-72 lg:w-[380px] xl:w-[460px] 2xl:w-[540px] pointer-events-none select-none z-0 transition-all duration-500 opacity-40 sm:opacity-95 md:opacity-100 -translate-x-2 sm:translate-x-0">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-20 sm:w-44 md:w-72 lg:w-[380px] xl:w-[460px] 2xl:w-[540px] pointer-events-none select-none z-0 transition-all duration-500 opacity-25 sm:opacity-95 md:opacity-100 -translate-x-3 sm:translate-x-0">
             <div className="relative w-full h-full">
               <Image
                 src="/images/golden_branch_left.png"
@@ -288,11 +299,11 @@ export default function Home() {
           </div>
 
           {/* Central Heritage Text */}
-          <div className="relative z-10 text-center max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-6 py-4">
-            <p className="text-[#D4AF37]/80 text-[10px] sm:text-xs tracking-[0.35em] uppercase mb-3 font-medium">
+          <div className="relative z-10 text-center max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+            <p className="text-[#D4AF37]/80 text-[10px] sm:text-xs tracking-[0.3em] uppercase mb-2 sm:mb-3 font-medium">
               Embrace the Heritage
             </p>
-            <h1 className="font-serif text-2xl sm:text-3xl md:text-[34px] lg:text-[38px] text-[#D4AF37] leading-snug md:leading-tight mb-4 drop-shadow-[0_2px_15px_rgba(212,175,55,0.25)]">
+            <h1 className="font-serif text-xl sm:text-3xl md:text-[34px] lg:text-[38px] text-[#D4AF37] leading-snug md:leading-tight mb-3 sm:mb-4 drop-shadow-[0_2px_15px_rgba(212,175,55,0.25)]">
               Inspired by the Divine Grace of <br className="hidden sm:block" />
               <span className="italic font-light text-[#F5E6BE]">Kanchi & Kamakshi Amma</span>
             </h1>
@@ -303,7 +314,7 @@ export default function Home() {
           </div>
 
           {/* Right Golden Branch & Glowing Dots - connected directly to right edge of page */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-32 sm:w-56 md:w-72 lg:w-[380px] xl:w-[460px] 2xl:w-[540px] pointer-events-none select-none z-0 transition-all duration-500 opacity-40 sm:opacity-95 md:opacity-100 translate-x-2 sm:translate-x-0">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-20 sm:w-44 md:w-72 lg:w-[380px] xl:w-[460px] 2xl:w-[540px] pointer-events-none select-none z-0 transition-all duration-500 opacity-25 sm:opacity-95 md:opacity-100 translate-x-3 sm:translate-x-0">
             <div className="relative w-full h-full">
               <Image
                 src="/images/golden_branch_right.png"
@@ -361,12 +372,12 @@ export default function Home() {
               </div>
 
               {products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto w-full">
                   {products.map((product) => (
                     <Link 
                       href={`/product/${product.id}`} 
                       key={product.id}
-                      className="group relative flex flex-col bg-[#1A0106] rounded-md border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 overflow-hidden"
+                      className="group relative flex flex-col bg-[#1A0106] rounded-md border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 overflow-hidden active:scale-[0.99]"
                     >
                       <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-[#D4AF37]/30">
                         <Image
@@ -418,14 +429,14 @@ export default function Home() {
 
       {/* Sleek Horizontal Footer Bar */}
       <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 py-6 px-4 sm:px-6 lg:px-8 text-[#D4AF37]/70">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           {/* Left: Copyright */}
-          <p className="text-[11px] uppercase tracking-widest text-[#D4AF37]/60 whitespace-nowrap">
+          <p className="text-[11px] uppercase tracking-widest text-[#D4AF37]/60">
             &copy; {new Date().getFullYear()} JKK Silks. All Rights Reserved.
           </p>
 
           {/* Right in series: Address | Contact Us | Logos */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2 text-xs">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-5 gap-y-2.5 text-xs">
             {/* Address */}
             <span className="text-[11px] uppercase tracking-[0.2em] text-[#FFF8E7]/70">
               Wyra, Khammam
@@ -452,7 +463,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setEnquiryModalOpen(true)}
-                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)] active:scale-95"
                 title="Email Enquiry"
                 aria-label="Email"
               >
@@ -463,7 +474,7 @@ export default function Home() {
                 href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all shadow-[0_0_10px_rgba(212,175,55,0.15)] active:scale-95"
                 title="Instagram"
                 aria-label="Instagram"
               >

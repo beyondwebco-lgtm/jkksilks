@@ -107,17 +107,17 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#210209] text-[#D4AF37] font-sans selection:bg-[#D4AF37] selection:text-[#210209]">
       {/* Top Navigation: Only Back to Home Button */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-2 sm:pb-4">
         <Link 
           href="/" 
-          className="inline-flex items-center gap-2 text-[#D4AF37] hover:text-[#FFF8E7] transition-all text-xs uppercase tracking-[0.2em] font-medium bg-[#D4AF37]/10 hover:bg-[#D4AF37]/25 px-5 py-2.5 rounded-full border border-[#D4AF37]/30 hover:border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+          className="inline-flex items-center gap-2 text-[#D4AF37] hover:text-[#FFF8E7] transition-all text-xs uppercase tracking-[0.2em] font-medium bg-[#D4AF37]/10 hover:bg-[#D4AF37]/25 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#D4AF37]/30 hover:border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.15)] active:scale-95"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full flex flex-col items-center px-4 sm:px-6 lg:px-8 pb-32">
+      <main className="flex-1 w-full flex flex-col items-center px-4 sm:px-6 lg:px-8 pb-24 sm:pb-32">
         
         {/* Category Products */}
         {loading ? (
@@ -125,21 +125,21 @@ export default function CategoryPage() {
             <LotusAnimation />
           </div>
         ) : (
-          <div className="w-full flex flex-col mt-8">
+          <div className="w-full flex flex-col mt-4 sm:mt-8">
             <section className="w-full max-w-7xl mx-auto px-4">
-              <div className="text-center mb-10 flex flex-col items-center">
-                <LotusIcon className="w-9 h-9 mb-2.5 opacity-95" />
-                <h2 className="text-[#D4AF37] font-serif text-3xl mb-3">{categoryInfo.name}</h2>
-                <p className="text-[#FFF8E7]/60 text-sm tracking-wide font-light">{categoryInfo.description}</p>
+              <div className="text-center mb-8 sm:mb-10 flex flex-col items-center">
+                <LotusIcon className="w-8 h-8 sm:w-9 sm:h-9 mb-2.5 opacity-95" />
+                <h2 className="text-[#D4AF37] font-serif text-2xl sm:text-3xl mb-2 sm:mb-3">{categoryInfo.name}</h2>
+                <p className="text-[#FFF8E7]/60 text-xs sm:text-sm tracking-wide font-light max-w-md">{categoryInfo.description}</p>
               </div>
 
               {products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto w-full">
                   {products.map((product) => (
                     <Link 
                       href={`/product/${product.id}`} 
                       key={product.id}
-                      className="group relative flex flex-col bg-[#1A0106] rounded-md border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 overflow-hidden"
+                      className="group relative flex flex-col bg-[#1A0106] rounded-md border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 overflow-hidden active:scale-[0.99]"
                     >
                       <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-[#D4AF37]/30">
                         <Image 
@@ -191,18 +191,18 @@ export default function CategoryPage() {
 
       {/* Sleek Horizontal Footer Bar */}
       <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 py-6 px-4 sm:px-6 lg:px-8 text-[#D4AF37]/70">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           {/* Left: Copyright & Return link */}
-          <div className="flex items-center gap-4 text-[11px] uppercase tracking-widest text-[#D4AF37]/60">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] uppercase tracking-widest text-[#D4AF37]/60">
             <p>&copy; {new Date().getFullYear()} JKK Silks. All Rights Reserved.</p>
             <span>&bull;</span>
-            <Link href="/" className="text-[#D4AF37]/80 hover:text-[#FFF8E7] transition-colors">
+            <Link href="/" className="text-[#D4AF37]/80 hover:text-[#FFF8E7] transition-colors underline sm:no-underline">
               Return to Storefront
             </Link>
           </div>
 
           {/* Right in series: Address | Contact Us | Logos */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2 text-xs">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-5 gap-y-2.5 text-xs">
             {/* Address */}
             <span className="text-[11px] uppercase tracking-[0.2em] text-[#FFF8E7]/70">
               Wyra, Khammam
@@ -229,7 +229,7 @@ export default function CategoryPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setEnquiryModalOpen(true)}
-                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)] active:scale-95"
                 title="Email Enquiry"
                 aria-label="Email"
               >
@@ -240,7 +240,7 @@ export default function CategoryPage() {
                 href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all shadow-[0_0_10px_rgba(212,175,55,0.15)]"
+                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all shadow-[0_0_10px_rgba(212,175,55,0.15)] active:scale-95"
                 title="Instagram"
                 aria-label="Instagram"
               >
