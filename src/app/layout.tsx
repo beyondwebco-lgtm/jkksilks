@@ -16,11 +16,13 @@ export const metadata: Metadata = {
   description: "Experience the timeless elegance of authentic Kanjivaram and Banarasi silk sarees.",
   icons: {
     icon: [
-      { url: '/favicon.ico' },
-      { url: '/icon.png', type: 'image/png' },
+      { url: '/icon.png?v=2', type: 'image/png' },
+      { url: '/icon.png?v=2', sizes: '192x192', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico',
-    apple: '/icon.png',
+    shortcut: '/icon.png?v=2',
+    apple: [
+      { url: '/apple-icon.png?v=2', sizes: '180x180', type: 'image/png' },
+    ],
   },
 };
 
