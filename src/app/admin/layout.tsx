@@ -36,7 +36,7 @@ export default function AdminLayout({
   const [loading, setLoading] = useState(true);
 
   // If on /admin/login, bypass layout wrapper
-  const isLoginPage = pathname === '/admin/login';
+  const isLoginPage = pathname ? pathname.includes('/admin/login') : false;
 
   useEffect(() => {
     if (isLoginPage) {
