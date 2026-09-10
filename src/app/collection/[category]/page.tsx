@@ -8,7 +8,6 @@ import { ArrowLeft, MessageCircle, Mail } from 'lucide-react';
 import { InstagramIcon } from '@/components/Icons';
 import { supabase, Product } from '@/lib/supabase';
 import EnquiryModal from '@/components/EnquiryModal';
-import PolicyModal, { PolicyType } from '@/components/PolicyModal';
 import QuickContactFloating from '@/components/QuickContactFloating';
 
 const LotusIcon = ({ className }: { className?: string }) => (
@@ -74,7 +73,6 @@ export default function CategoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
-  const [activePolicy, setActivePolicy] = useState<PolicyType>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -237,56 +235,23 @@ export default function CategoryPage() {
             Wyra, Khammam
           </p>
 
-          {/* Bottom Bar: Copyright | Policy Links | Return to Storefront */}
-          <div className="pt-6 border-t border-[#D4AF37]/15 w-full flex flex-col lg:flex-row items-center justify-between text-xs text-[#D4AF37]/60 tracking-wider gap-4">
-            <p className="text-[11px] uppercase tracking-widest text-[#D4AF37]/50">
-              &copy; {new Date().getFullYear()} JKK Silks. All Rights Reserved.
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-widest">
-              <button 
-                onClick={() => setActivePolicy('privacy')}
-                className="hover:text-[#FFF8E7] transition-colors cursor-pointer"
-              >
-                Privacy Policy
-              </button>
-              <button 
-                onClick={() => setActivePolicy('shipping')}
-                className="hover:text-[#FFF8E7] transition-colors cursor-pointer"
-              >
-                Shipping Policy
-              </button>
-              <button 
-                onClick={() => setActivePolicy('terms')}
-                className="hover:text-[#FFF8E7] transition-colors cursor-pointer"
-              >
-                Terms Of Service
-              </button>
-              <button 
-                onClick={() => setActivePolicy('return')}
-                className="hover:text-[#FFF8E7] transition-colors cursor-pointer"
-              >
-                Return Policy
-              </button>
-            </div>
-
-            <div className="text-[11px] uppercase tracking-widest">
-              <Link href="/" className="text-[#D4AF37]/50 hover:text-[#D4AF37] transition-colors">
-                Return to Storefront
-              </Link>
-            </div>
+          {/* Bottom Bar: Copyright | Return to Storefront */}
+          <div className="pt-6 border-t border-[#D4AF37]/15 w-full flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#D4AF37]/50 tracking-widest uppercase gap-2">
+            <p>&copy; {new Date().getFullYear()} JKK Silks. All Rights Reserved.</p>
+            <Link href="/" className="hover:text-[#D4AF37] transition-colors">
+              Return to Storefront
+            </Link>
           </div>
         </div>
       </footer>
 
-      {/* Floating Quick Contact, Enquiry Modal & Policy Modal */}
+      {/* Floating Quick Contact & Enquiry Modal */}
       <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
       <EnquiryModal 
         isOpen={enquiryModalOpen} 
         onClose={() => setEnquiryModalOpen(false)} 
         defaultCategory={categoryInfo.name} 
       />
-      <PolicyModal policy={activePolicy} onClose={() => setActivePolicy(null)} />
       
     </div>
   );
