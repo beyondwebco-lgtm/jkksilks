@@ -160,14 +160,10 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Right: Heritage */}
-          <div className="flex items-center justify-end lg:justify-between lg:pl-12 w-full">
-            <div className="hidden lg:flex gap-10 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
-              <NavLink text="Heritage" href="/collection/heritage" />
-            </div>
-
-            {/* Action CTA Button */}
-            <div className="flex items-center gap-4">
+          {/* Right: Enquire & Heritage */}
+          <div className="flex items-center justify-end lg:justify-start lg:pl-12 w-full">
+            <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
+              {/* Action CTA Button moved leftwards to Heritage */}
               <button 
                 onClick={() => {
                   const el = document.getElementById('enquiry');
@@ -177,11 +173,13 @@ export default function Home() {
                     setEnquiryModalOpen(true);
                   }
                 }}
-                className="hidden sm:flex items-center gap-2 border border-[#D4AF37] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] hover:bg-[#E5C158] font-semibold transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
+                className="flex items-center gap-2 border border-[#D4AF37] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] hover:bg-[#E5C158] font-semibold transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Enquire</span>
               </button>
+
+              <NavLink text="Heritage" href="/collection/heritage" />
             </div>
           </div>
 
