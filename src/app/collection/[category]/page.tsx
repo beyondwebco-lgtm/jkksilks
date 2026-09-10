@@ -170,10 +170,13 @@ export default function CategoryPage() {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16 sm:py-24">
-                  <div className="border border-[#D4AF37]/40 text-[#D4AF37] text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] px-8 py-3 rounded-full flex items-center gap-2.5 bg-[#D4AF37]/5 shadow-[0_0_20px_rgba(212,175,55,0.15)]">
-                    <Sparkles className="w-4 h-4 text-[#D4AF37]" /> COMING SOON
-                  </div>
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <p className="font-serif text-2xl sm:text-3xl text-[#D4AF37] tracking-[0.3em] uppercase font-light drop-shadow-[0_2px_15px_rgba(212,175,55,0.25)]">
+                    Coming Soon
+                  </p>
+                  <p className="text-[#FFF8E7]/50 text-xs tracking-[0.15em] uppercase mt-3 font-light">
+                    Curating sacred treasures for life&apos;s celebrations
+                  </p>
                 </div>
               )}
             </section>

@@ -14,6 +14,10 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "JKK Silks - Luxury Saree E-Commerce",
   description: "Experience the timeless elegance of authentic Kanjivaram and Banarasi silk sarees.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
