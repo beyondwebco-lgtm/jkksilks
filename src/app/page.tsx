@@ -8,7 +8,6 @@ import { Menu, Sparkles, MessageCircle, X, Mail } from 'lucide-react';
 import { InstagramIcon } from '@/components/Icons';
 import { supabase, Product } from '@/lib/supabase';
 import EnquiryModal from '@/components/EnquiryModal';
-import EnquirySection from '@/components/EnquirySection';
 import QuickContactFloating from '@/components/QuickContactFloating';
 
 const LotusIcon = ({ className }: { className?: string }) => (
@@ -160,26 +159,18 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Right: Enquire & Heritage */}
+          {/* Right: Heritage & Enquire */}
           <div className="flex items-center justify-end lg:justify-start lg:pl-12 w-full">
             <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
-              {/* Action CTA Button moved leftwards to Heritage */}
+              <NavLink text="Heritage" href="/collection/heritage" />
+
               <button 
-                onClick={() => {
-                  const el = document.getElementById('enquiry');
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' });
-                  } else {
-                    setEnquiryModalOpen(true);
-                  }
-                }}
+                onClick={() => setEnquiryModalOpen(true)}
                 className="flex items-center gap-2 border border-[#D4AF37] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] hover:bg-[#E5C158] font-semibold transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Enquire</span>
               </button>
-
-              <NavLink text="Heritage" href="/collection/heritage" />
             </div>
           </div>
 
@@ -231,12 +222,7 @@ export default function Home() {
               <button 
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  const el = document.getElementById('enquiry');
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' });
-                  } else {
-                    setEnquiryModalOpen(true);
-                  }
+                  setEnquiryModalOpen(true);
                 }}
                 className="inline-flex items-center justify-center gap-2 border border-[#D4AF37] px-4 py-2.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] font-semibold cursor-pointer shadow-md"
               >
@@ -430,9 +416,6 @@ export default function Home() {
         )}
 
       </main>
-
-      {/* On-Page Formal Enquiry Form Section */}
-      <EnquirySection />
 
       {/* Royal Footer with Contacts & Socials */}
       <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 pt-12 pb-16 px-4 sm:px-6 lg:px-8 text-center text-[#D4AF37]/70">
