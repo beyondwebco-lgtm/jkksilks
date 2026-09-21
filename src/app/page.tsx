@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, Mail } from 'lucide-react';
+import { InstagramIcon } from '@/components/Icons';
 
 import QuickContactFloating from '@/components/QuickContactFloating';
 import SearchBar from '@/components/SearchBar';
@@ -286,6 +287,18 @@ export default function Home() {
             <div className="flex items-center gap-1.5 text-[11px] tracking-wider">
               <span className="uppercase text-[#1F3324] font-medium tracking-widest">Contact Us:</span>
               <a href="https://wa.me/916309143484" target="_blank" rel="noreferrer" className="text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors font-medium">+91 6309 143 484</a>
+            </div>
+            <div className="flex items-center gap-3 ml-2">
+              <a 
+                href="https://www.instagram.com/jkk_silks?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==" 
+                target="_blank" 
+                rel="noreferrer"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#1F3324]/40 hover:border-[#8A5A19] text-[#1F3324] hover:text-[#8A5A19] hover:bg-[#8A5A19]/10 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95"
+                title="Instagram"
+                aria-label="Instagram"
+              >
+                <InstagramIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </a>
             </div>
           </div>
         </div>
