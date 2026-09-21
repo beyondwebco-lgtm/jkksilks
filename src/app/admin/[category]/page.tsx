@@ -393,6 +393,14 @@ export default function AdminCategoryPage() {
     try {
       let finalCoverImageUrl = newSubCatCover;
       
+      let oldCoverImageUrl = '';
+      if (editingSubCatId) {
+        const oldCat = subcategories.find(c => c.id === editingSubCatId);
+        if (oldCat) {
+          oldCoverImageUrl = oldCat.coverImage || '';
+        }
+      }
+
       // Upload new cover image if selected
       if (newSubCatUpload) {
         finalCoverImageUrl = await uploadSingleImageToR2(newSubCatUpload.file);
@@ -424,6 +432,15 @@ export default function AdminCategoryPage() {
       
       if (editingSubCatId) {
         setSubcategories(prev => prev.map(c => c.id === editingSubCatId ? { ...c, ...savedCat } : c));
+        
+        // If an old image existed and a new one was uploaded successfully, delete the old one
+        if (oldCoverImageUrl && newSubCatUpload && oldCoverImageUrl !== finalCoverImageUrl) {
+          fetch('/api/delete-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrls: [oldCoverImageUrl] })
+          }).catch(console.error);
+        }
       } else {
         setSubcategories(prev => [...prev, savedCat]);
         if (subcategories.length === 0) setCategorySelect(savedCat.name);
@@ -446,9 +463,17 @@ export default function AdminCategoryPage() {
     }
   };
 
-  const handleDeleteSubCategory = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+  const handleDeleteSubCategory = async (id: string, coverImage?: string) => {
+    if (!confirm('Are you sure you want to delete this category? Its cover image will also be permanently deleted from Cloudflare.')) return;
     try {
+      if (coverImage) {
+        await fetch('/api/delete-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageUrls: [coverImage] })
+        });
+      }
+
       const res = await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete category');
       setSubcategories(prev => prev.filter(c => c.id !== id));
@@ -573,7 +598,7 @@ export default function AdminCategoryPage() {
                     <button onClick={() => startEditingSubCat(cat)} className="p-2 text-[#1F3324] font-semibold hover:text-[#1F3324] hover:bg-[#1F3324]/10 rounded-sm" title="Edit">
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDeleteSubCategory(cat.id)} className="p-2 text-red-400/70 hover:text-red-400 hover:bg-red-900/20 rounded-sm" title="Delete">
+                    <button onClick={() => handleDeleteSubCategory(cat.id, cat.coverImage)} className="p-2 text-red-400/70 hover:text-red-400 hover:bg-red-900/20 rounded-sm" title="Delete">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
