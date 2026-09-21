@@ -44,6 +44,7 @@ if (customR2Hostname && !remotePatterns.some(p => p.hostname === customR2Hostnam
 const nextConfig: NextConfig = {
   images: {
     remotePatterns,
+    minimumCacheTTL: 31536000, // 1 year cache for optimized images
   },
   allowedDevOrigins: ['127.0.0.1'],
 };

@@ -189,7 +189,7 @@ export default function CategoryPage() {
 
               {filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto w-full">
-                  {filteredProducts.map((product) => (
+                  {filteredProducts.map((product, index) => (
                     <Link 
                       href={`/product/${product.id}`} 
                       key={product.id}
@@ -200,6 +200,8 @@ export default function CategoryPage() {
                           src={product.image_url} 
                           alt={product.name} 
                           fill 
+                          priority={index < 4}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                           className="object-cover group-hover:scale-105 transition-transform duration-500" 
                         />
                         {calculateDiscountPercent(product.original_price, product.discount_price) && (
