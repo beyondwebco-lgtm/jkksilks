@@ -148,6 +148,7 @@ function SearchResultsContent() {
                           src={product.image_url} 
                           alt={product.name}
                           fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                           className="object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
                         />
                       </div>

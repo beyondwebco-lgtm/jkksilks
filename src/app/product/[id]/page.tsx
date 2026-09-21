@@ -188,7 +188,7 @@ export default function ProductDetailPage() {
                         : 'border-[#8A5A19]/30 hover:border-[#8A5A19]/70 opacity-70 hover:opacity-100'
                       }`}
                   >
-                    <Image src={imgUrl} alt={`Thumbnail ${index + 1}`} fill className="object-cover" />
+                    <Image src={imgUrl} alt={`Thumbnail ${index + 1}`} fill sizes="80px" className="object-cover" />
                   </button>
                 ))}
               </div>

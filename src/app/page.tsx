@@ -80,7 +80,7 @@ const CategoryGrid = () => {
           className="group relative w-[calc(50%-0.375rem)] md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] aspect-[3/4] flex flex-col overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-700"
         >
           <div className="absolute inset-0 w-full h-full bg-[#EAE3D9]">
-            <Image src={cat.coverImage!} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" />
+            <Image src={cat.coverImage!} alt={cat.name} fill sizes="(max-width: 768px) 50vw, 33vw" className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" />
           </div>
 
           <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 w-[75%] sm:w-[70%] bg-white/95 backdrop-blur-md py-3.5 px-2 text-center shadow-[0_8px_25px_rgba(0,0,0,0.1)] border border-[#D4AF37]/30 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_15px_35px_rgba(212,175,55,0.15)]">
