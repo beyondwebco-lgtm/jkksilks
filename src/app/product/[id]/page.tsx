@@ -119,13 +119,20 @@ export default function ProductDetailPage() {
         : '';
 
     let descText = product.description || '';
+    let colorName = '';
+    let fabricSpec = '';
     try {
       if (descText.trim().startsWith('{')) {
-        descText = JSON.parse(descText).text;
+        const parsed = JSON.parse(descText);
+        descText = parsed.text;
+        colorName = parsed.colorName || '';
+        fabricSpec = parsed.fabricSpec || '';
       }
     } catch (e) { }
 
-    const message = `Hello JKK Silks,\n\nI am interested in purchasing this piece:\n*${product.name}* ${priceText}\nCategory: ${product.category.toUpperCase()}\n\n${descText ? `Note: "${descText}"\n\n` : ''}Could you please confirm availability and provide payment details? Thank you!`;
+    const productUrl = window.location.href;
+
+    const message = `Hello JKK Silks,\n\nI am interested in purchasing this piece:\n*${product.name}* ${priceText}\nCategory: ${product.category.toUpperCase()}\n${colorName ? `Color: ${colorName}\n` : ''}${fabricSpec ? `Fabric: ${fabricSpec}\n` : ''}\n${descText ? `Details: "${descText}"\n\n` : ''}Link: ${productUrl}\n\nCould you please confirm availability and provide payment details? Thank you!`;
 
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
