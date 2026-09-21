@@ -27,7 +27,7 @@ export default function EnquiryModal({
 
   if (!isOpen) return null;
 
-  const targetEmail = 'jikkichowdary1@gmail.com';
+  const targetEmail = 'jkksilks1@gmail.com';
   const whatsappNumber = '916309143484';
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,7 +55,7 @@ ${message}
 Sent via JKK Silks Official Storefront
 `;
 
-    // Open mail client directly to jikkichowdary1@gmail.com
+    // Open mail client directly to jkksilks1@gmail.com
     const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
     window.location.href = mailtoUrl;
 

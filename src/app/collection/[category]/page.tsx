@@ -315,7 +315,7 @@ export default function CategoryPage() {
               </button>
 
               <a 
-                href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
+                href="https://www.instagram.com/jkk_silks?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==" 
                 target="_blank" 
                 rel="noreferrer"
                 className="w-8 h-8 rounded-full border border-[#8A5A19]/40 hover:border-[#8A5A19] text-[#8A5A19] hover:text-[#1F3324] hover:bg-[#8A5A19]/10 flex items-center justify-center transition-all shadow-[0_0_10px_rgba(138,90,25,0.15)] active:scale-95"
