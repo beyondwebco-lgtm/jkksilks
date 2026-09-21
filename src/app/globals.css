@@ -84,3 +84,109 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
   animation: goldGlowDot ease-in-out infinite alternate;
 }
+@keyframes mandala-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes mandala-spin-reverse {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+@keyframes mandala-pulse {
+  0%, 100% { 
+    opacity: 0.85; 
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.8));
+  }
+  50% { 
+    opacity: 1; 
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 1)) drop-shadow(0 0 40px rgba(255, 165, 0, 0.7));
+  }
+}
+
+.magic-mandala-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.group:hover .magic-mandala-container {
+  opacity: 1;
+}
+
+.mandala-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  border-color: #D4AF37;
+  border-style: solid;
+}
+
+/* Outer rune ring */
+.mandala-ring-1 {
+  width: 130%;
+  height: 130%;
+  border-width: 2px;
+  border-style: dashed;
+  border-color: rgba(212, 175, 55, 1);
+  animation: mandala-spin 12s linear infinite, mandala-pulse 4s ease-in-out infinite;
+}
+
+/* Middle intricate ring */
+.mandala-ring-2 {
+  width: 120%;
+  height: 120%;
+  border-width: 3px;
+  border-style: dotted;
+  border-color: rgba(212, 175, 55, 1);
+  animation: mandala-spin-reverse 15s linear infinite;
+  box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.6), 0 0 15px rgba(212, 175, 55, 0.6);
+}
+
+/* Inner fast ring */
+.mandala-ring-3 {
+  width: 110%;
+  height: 110%;
+  border-width: 2px;
+  border-color: rgba(212, 175, 55, 0.9);
+  border-style: double;
+  animation: mandala-spin 8s linear infinite;
+}
+
+/* Geometry lines across */
+.mandala-geometry {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 125%;
+  height: 125%;
+  animation: mandala-spin-reverse 20s linear infinite;
+}
+
+.mandala-geometry::before, .mandala-geometry::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 1), transparent);
+  transform-origin: center;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+}
+
+.mandala-geometry::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.mandala-geometry::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}

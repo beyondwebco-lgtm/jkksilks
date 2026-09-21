@@ -131,10 +131,18 @@ export default function Home() {
           </div>
           
           {/* Center: Logo */}
-          <div className="flex justify-center my-1 sm:my-2">
-            <Link href="/" className="group">
-              <div className="relative h-24 w-24 sm:h-36 sm:w-36 md:h-44 md:w-44 lg:h-48 lg:w-48 rounded-full overflow-hidden shadow-[0_0_20px_rgba(31,51,36,0.1)] border border-[#1F3324]/20 group-hover:border-[#D4AF37] transition-all">
-                <Image src="/images/logo.jpg" alt="JKK Silks Logo" fill className="object-cover" priority />
+          <div className="flex justify-center my-1 sm:my-2 relative z-20">
+            <Link href="/" className="group relative z-10 flex items-center justify-center">
+              {/* Doctor Strange style Mandala Rings */}
+              <div className="magic-mandala-container absolute inset-0 z-0 flex items-center justify-center">
+                <div className="mandala-ring mandala-ring-1"></div>
+                <div className="mandala-ring mandala-ring-2"></div>
+                <div className="mandala-ring mandala-ring-3"></div>
+                <div className="mandala-geometry"></div>
+              </div>
+              
+              <div className="relative h-24 w-24 sm:h-36 sm:w-36 md:h-44 md:w-44 lg:h-48 lg:w-48 rounded-full overflow-hidden shadow-[0_0_20px_rgba(31,51,36,0.1)] border border-[#1F3324]/20 group-hover:border-[#D4AF37]/50 transition-all z-10 bg-[#EBD4C9]">
+                <Image src="/images/logo.jpg" alt="JKK Silks Logo" fill priority sizes="(max-width: 768px) 96px, 192px" className="object-cover" />
               </div>
             </Link>
           </div>
