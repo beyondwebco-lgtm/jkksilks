@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 export default function SearchBar() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<{ id: string; name: string; category: string }[]>([]);
+  const [results, setResults] = useState<{ id: string; name: string; category: string; description?: string }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);

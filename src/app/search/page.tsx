@@ -150,11 +150,6 @@ function SearchResultsContent() {
                           fill
                           className="object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out"
                         />
-                        {product.is_sold_out && (
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[1px]">
-                            <span className="bg-[#1F3324] text-[#EBD4C9] text-xs font-bold px-4 py-1.5 uppercase tracking-widest shadow-lg transform -rotate-2 border border-[#EBD4C9]/20">Sold Out</span>
-                          </div>
-                        )}
                       </div>
                       
                       <div className="p-4 sm:p-5 flex flex-col flex-grow relative bg-gradient-to-b from-[#EAE3D9] to-[#E3D8CA]">
@@ -163,16 +158,16 @@ function SearchResultsContent() {
                         
                         <div className="mt-auto">
                           <div className="flex items-baseline gap-2">
-                            {product.discount_price && product.discount_price > 0 && product.discount_price < product.price ? (
+                            {product.discount_price && product.discount_price > 0 && product.original_price && product.discount_price < product.original_price ? (
                               <>
                                 <span className="text-base sm:text-lg font-semibold text-[#1F3324]">₹{product.discount_price.toLocaleString()}</span>
-                                <span className="text-xs sm:text-sm text-[#1F3324]/50 line-through">₹{product.price.toLocaleString()}</span>
+                                <span className="text-xs sm:text-sm text-[#1F3324]/50 line-through">₹{product.original_price.toLocaleString()}</span>
                                 <span className="text-[10px] text-green-700 font-bold ml-auto bg-green-100 px-1.5 py-0.5 rounded-sm">
-                                  {calculateDiscountPercent(product.price, product.discount_price)}% OFF
+                                  {calculateDiscountPercent(product.original_price, product.discount_price)}% OFF
                                 </span>
                               </>
                             ) : (
-                              <span className="text-base sm:text-lg font-semibold text-[#1F3324]">₹{product.price.toLocaleString()}</span>
+                              <span className="text-base sm:text-lg font-semibold text-[#1F3324]">₹{product.original_price?.toLocaleString() || 'Price on request'}</span>
                             )}
                           </div>
                         </div>
@@ -217,7 +212,6 @@ function SearchResultsContent() {
       <EnquiryModal 
         isOpen={enquiryModalOpen} 
         onClose={() => setEnquiryModalOpen(false)} 
-        productName="General Enquiry"
       />
       <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
     </div>
