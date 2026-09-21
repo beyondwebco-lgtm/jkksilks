@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Menu, MessageCircle, X, Mail } from 'lucide-react';
-import { InstagramIcon } from '@/components/Icons';
-import { supabase, Product } from '@/lib/supabase';
+import Image from 'next/image';
+import { Menu, X, Mail } from 'lucide-react';
 import EnquiryModal from '@/components/EnquiryModal';
 import QuickContactFloating from '@/components/QuickContactFloating';
+import SearchBar from '@/components/SearchBar';
 
 const LotusIcon = ({ className }: { className?: string }) => (
   <div className={`relative ${className}`}>
@@ -37,255 +36,189 @@ const LotusAnimation = () => (
   </div>
 );
 
-const NavLink = ({ 
-  text, 
-  href, 
-  onClick 
-}: { 
-  text: string; 
-  href?: string; 
-  onClick?: (e: React.MouseEvent) => void;
-}) => {
+const NavLink = ({ text, href, onClick }: { text: string; href?: string; onClick?: (e: React.MouseEvent) => void }) => {
   return (
-    <Link 
-      href={href || '#'} 
-      onClick={onClick}
-      className="group relative cursor-pointer flex flex-col items-center justify-center pb-2 px-2"
-    >
-      <span className="group-hover:text-[#D4AF37] transition-colors relative z-10">{text}</span>
+    <Link href={href || '#'} onClick={onClick} className="group relative cursor-pointer flex flex-col items-center justify-center pb-2 px-2">
+      <span className="group-hover:text-[#8A5A19] font-semibold transition-colors relative z-10">{text}</span>
       <LotusAnimation />
     </Link>
   );
 };
+const CategoryGrid = () => {
+  const [categories, setCategories] = useState<{ id: string; name: string; count: number; coverImage?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch categories:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div className="text-[#8A5A19] animate-pulse py-10">Loading Collections...</div>;
+  }
+
+  const visibleCategories = categories.filter(cat => cat.coverImage);
+
+  if (visibleCategories.length === 0 && !loading) {
+    return <div className="text-[#8A5A19]/60 text-sm py-10 w-full text-center tracking-widest uppercase">Collections coming soon</div>;
+  }
+
+  return (
+    <>
+      {visibleCategories.map((cat) => (
+        <Link 
+          key={cat.id} 
+          href={`/collection/${cat.name.toLowerCase().replace(/\s+/g, '-')}`} 
+          className="group relative w-[calc(50%-0.375rem)] md:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] aspect-[3/4] flex flex-col overflow-hidden cursor-pointer shadow-lg hover:shadow-xl transition-all duration-700"
+        >
+          <div className="absolute inset-0 w-full h-full bg-[#EAE3D9]">
+            <Image src={cat.coverImage!} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" />
+          </div>
+
+          <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 w-[75%] sm:w-[70%] bg-white/95 backdrop-blur-md py-3.5 px-2 text-center shadow-[0_8px_25px_rgba(0,0,0,0.1)] border border-[#D4AF37]/30 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_15px_35px_rgba(212,175,55,0.15)]">
+            <h3 className="font-serif font-medium tracking-[0.15em] sm:tracking-[0.2em] text-[12px] sm:text-[14px] md:text-[15px] uppercase text-[#1F3324] truncate px-2">
+              {cat.name}
+            </h3>
+            <p className="flex items-center justify-center gap-2 text-[8px] sm:text-[9px] tracking-[0.25em] text-[#8A5A19] mt-2 font-semibold uppercase">
+              <span className="w-4 h-[1px] bg-[#8A5A19]/40"></span>
+              {cat.count || 0} {cat.count === 1 ? 'PRODUCT' : 'PRODUCTS'}
+              <span className="w-4 h-[1px] bg-[#8A5A19]/40"></span>
+            </p>
+          </div>
+        </Link>
+      ))}
+    </>
+  );
+};
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (!error && data) {
-          setProducts(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  const calculateDiscountPercent = (orig?: number | null, disc?: number | null) => {
-    if (orig && disc && orig > disc && orig > 0) {
-      return Math.round(((orig - disc) / orig) * 100);
-    }
-    return null;
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#210209] text-[#D4AF37] font-sans selection:bg-[#D4AF37] selection:text-[#210209]">
-      
+    <div className="min-h-screen flex flex-col bg-[#EBD4C9] text-[#1F3324] font-sans selection:bg-[#1F3324] selection:text-[#EBD4C9]">
       {/* Top Announcement Bar */}
-      <div className="w-full text-center py-2.5 text-xs tracking-[0.3em] uppercase border-b border-[#D4AF37]/20 flex justify-center items-center gap-3 bg-[#1A0106]">
+      <div className="w-full text-center py-2.5 text-xs tracking-[0.3em] uppercase border-b border-[#1F3324]/10 flex justify-center items-center gap-3 bg-[#E1C7BB]">
         <LotusIcon className="w-5 h-5 hidden sm:block opacity-90" />
-        <span className="text-[#D4AF37]/90 font-medium text-[11px] sm:text-xs">Grace. Tradition. Timeless Beauty.</span>
+        <span className="text-[#1F3324] font-medium text-[11px] sm:text-xs">Grace. Tradition. Timeless Beauty.</span>
         <LotusIcon className="w-5 h-5 hidden sm:block opacity-90" />
       </div>
 
       {/* Navigation & Brand Logo */}
       <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative">
         <div className="grid grid-cols-3 items-center w-full">
-          
-          {/* Left: Sarees & Jewellery Nav Links on desktop, Menu on mobile */}
-          <div className="flex items-center justify-start lg:justify-end lg:pr-12 w-full">
+          {/* Left: Nav */}
+          <div className="flex items-center justify-start lg:justify-center w-full">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 -ml-2 text-[#D4AF37] hover:text-[#FFF8E7] transition-colors rounded-full hover:bg-[#D4AF37]/10 active:scale-95 cursor-pointer"
-              aria-label="Toggle navigation menu"
+              className="lg:hidden p-2 -ml-2 text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors rounded-full hover:bg-[#1F3324]/5"
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
-            <div className="hidden lg:flex gap-10 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
+            <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
+              <SearchBar />
               <NavLink text="Sarees" href="/collection/sarees" />
               <NavLink text="Jewellery" href="/collection/jewellery" />
             </div>
           </div>
           
-          {/* Center: Exactly Centered Responsive Logo */}
+          {/* Center: Logo */}
           <div className="flex justify-center my-1 sm:my-2">
             <Link href="/" className="group">
-              <div className="relative h-24 w-24 sm:h-36 sm:w-36 md:h-44 md:w-44 lg:h-48 lg:w-48 rounded-full overflow-hidden shadow-[0_0_30px_rgba(212,175,55,0.2)] border-2 border-[#D4AF37]/40 group-hover:border-[#D4AF37] transition-all">
-                <Image 
-                  src="/images/logo.jpg" 
-                  alt="JKK Silks Logo" 
-                  fill 
-                  className="object-cover"
-                  priority
-                />
+              <div className="relative h-24 w-24 sm:h-36 sm:w-36 md:h-44 md:w-44 lg:h-48 lg:w-48 rounded-full overflow-hidden shadow-[0_0_20px_rgba(31,51,36,0.1)] border border-[#1F3324]/20 group-hover:border-[#D4AF37] transition-all">
+                <Image src="/images/logo.jpg" alt="JKK Silks Logo" fill className="object-cover" priority />
               </div>
             </Link>
           </div>
 
-          {/* Right: Heritage & Enquire (Desktop) & Quick Enquire Mail button (Mobile) */}
-          <div className="flex items-center justify-end lg:justify-start lg:pl-12 w-full">
+          {/* Right: Heritage & Contact */}
+          <div className="flex items-center justify-end lg:justify-center w-full">
             <button
               onClick={() => setEnquiryModalOpen(true)}
-              className="lg:hidden p-2 -mr-2 text-[#D4AF37] hover:text-[#FFF8E7] transition-colors rounded-full hover:bg-[#D4AF37]/10 active:scale-95 cursor-pointer"
-              aria-label="Open formal enquiry"
-              title="Enquire"
+              className="lg:hidden p-2 -mr-2 text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors rounded-full hover:bg-[#1F3324]/5"
             >
               <Mail className="h-5 w-5" />
             </button>
-            <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#D4AF37]/80">
+            <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
+              <NavLink text="Dresses" href="/collection/dresses" />
               <NavLink text="Heritage" href="/collection/heritage" />
-
               <button 
                 onClick={() => setEnquiryModalOpen(true)}
-                className="flex items-center gap-2 border border-[#D4AF37] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] hover:bg-[#E5C158] font-semibold transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
+                className="flex items-center gap-2 border border-[#1F3324] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#EBD4C9] bg-[#1F3324] hover:bg-[#D4AF37] font-semibold transition-all shadow-md"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Enquire</span>
               </button>
             </div>
           </div>
-
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 z-50 bg-[#1A0106]/98 backdrop-blur-md border-b border-[#D4AF37]/30 px-6 py-6 shadow-[0_10px_30px_rgba(0,0,0,0.8)] animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-col gap-3.5 text-xs font-medium uppercase tracking-[0.25em]">
-              <Link 
-                href="/collection/sarees" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37] flex items-center justify-between"
-              >
+          <div className="lg:hidden absolute top-full left-0 right-0 z-50 bg-[#EBD4C9]/98 backdrop-blur-md border-b border-[#1F3324]/10 px-6 py-6 shadow-xl">
+             <div className="flex flex-col gap-3.5 text-xs font-medium uppercase tracking-[0.25em]">
+              <Link href="/collection/sarees" onClick={() => setMobileMenuOpen(false)} className="text-left py-2.5 border-b border-[#1F3324]/10 hover:text-[#8A5A19] font-semibold text-[#1F3324] flex justify-between">
                 <span>✦ Pure Sarees</span>
-                <span className="text-[10px] text-[#FFF8E7]/40 tracking-widest font-normal">Explore &rarr;</span>
               </Link>
-              <Link 
-                href="/collection/jewellery" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37] flex items-center justify-between"
-              >
+              <Link href="/collection/jewellery" onClick={() => setMobileMenuOpen(false)} className="text-left py-2.5 border-b border-[#1F3324]/10 hover:text-[#8A5A19] font-semibold text-[#1F3324] flex justify-between">
                 <span>✤ Imitation Jewellery</span>
-                <span className="text-[10px] text-[#FFF8E7]/40 tracking-widest font-normal">Explore &rarr;</span>
               </Link>
-              <Link 
-                href="/collection/heritage" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-left py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37] flex items-center justify-between"
-              >
+              <Link href="/collection/dresses" onClick={() => setMobileMenuOpen(false)} className="text-left py-2.5 border-b border-[#1F3324]/10 hover:text-[#8A5A19] font-semibold text-[#1F3324] flex justify-between">
+                <span>✧ Dresses</span>
+              </Link>
+              <Link href="/collection/heritage" onClick={() => setMobileMenuOpen(false)} className="text-left py-2.5 border-b border-[#1F3324]/10 hover:text-[#8A5A19] font-semibold text-[#1F3324] flex justify-between">
                 <span>✺ Heritage Artifacts</span>
-                <span className="text-[10px] text-[#FFF8E7]/40 tracking-widest font-normal">Explore &rarr;</span>
               </Link>
-              <a 
-                href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
-                target="_blank" 
-                rel="noreferrer" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 py-2.5 border-b border-[#D4AF37]/15 hover:text-[#FFF8E7] text-[#D4AF37]"
-              >
-                <InstagramIcon className="w-4 h-4 text-[#E1306C]" /> Follow on Instagram
-              </a>
-              <a 
-                href="https://wa.me/916309143484" 
-                target="_blank" 
-                rel="noreferrer" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="inline-flex items-center justify-center gap-2 border border-[#25D366] text-white bg-[#25D366] px-4 py-3 mt-1 rounded-sm text-xs uppercase tracking-wider font-semibold shadow-md active:scale-[0.98] transition-transform"
-              >
-                <MessageCircle className="w-4 h-4" /> WhatsApp: +91 6309 143 484
-              </a>
-              <button 
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setEnquiryModalOpen(true);
-                }}
-                className="inline-flex items-center justify-center gap-2 border border-[#D4AF37] px-4 py-3 rounded-sm text-xs uppercase tracking-wider text-[#210209] bg-[#D4AF37] font-semibold cursor-pointer shadow-md active:scale-[0.98] transition-transform"
-              >
-                <Mail className="w-4 h-4" /> Formal Enquiry
-              </button>
-            </div>
+             </div>
           </div>
         )}
       </header>
 
-      {/* Ornate Divider */}
-      <div className="w-full max-w-4xl mx-auto flex items-center justify-center gap-4 pt-1 pb-4 sm:pb-6 px-4 opacity-70">
-        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
-        <LotusIcon className="w-8 h-8 sm:w-10 sm:h-10" />
-        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
-      </div>
-
       {/* Main Content Area */}
       <main className="flex-1 w-full flex flex-col items-center pb-24 sm:pb-32">
         
-        {/* Full-width Hero Section with Large Flanking Golden Branches Connected to Page Ends */}
+        {/* Hero Section */}
         <section className="relative w-full overflow-hidden flex items-center justify-center min-h-[220px] sm:min-h-[260px] md:min-h-[300px] lg:min-h-[340px] pt-4 pb-4 md:pt-6 md:pb-4 my-0">
+
           {/* Left Golden Branch & Glowing Dots - connected directly to left edge of page */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-20 sm:w-44 md:w-72 lg:w-[380px] xl:w-[460px] 2xl:w-[540px] pointer-events-none select-none z-0 transition-all duration-500 opacity-25 sm:opacity-95 md:opacity-100 -translate-x-3 sm:translate-x-0">
             <div className="relative w-full h-full">
-              <Image
-                src="/images/golden_branch_left.png"
-                alt="Left Decorative Golden Branch"
-                width={1024}
-                height={682}
-                className="w-full h-auto object-contain"
-                priority
-              />
-              
-              {/* Little Glowing Golden Dots around Left Branch */}
+              <Image src="/images/golden_branch_left.png" alt="Left Decorative Golden Branch" width={1024} height={682} className="w-full h-auto object-contain" priority />
               {[
-                { top: '10%', left: '78%', size: 4, delay: '0s', duration: '2.6s' },
-                { top: '16%', left: '60%', size: 3, delay: '0.8s', duration: '3.2s' },
-                { top: '22%', left: '88%', size: 5, delay: '1.4s', duration: '2.4s' },
-                { top: '32%', left: '48%', size: 3, delay: '2.1s', duration: '3.6s' },
-                { top: '42%', left: '70%', size: 4.5, delay: '0.3s', duration: '3.0s' },
-                { top: '54%', left: '32%', size: 3, delay: '1.7s', duration: '2.8s' },
-                { top: '64%', left: '44%', size: 4, delay: '1.1s', duration: '3.4s' },
-                { top: '26%', left: '36%', size: 2.5, delay: '2.4s', duration: '3.9s' },
-                { top: '6%', left: '85%', size: 3.5, delay: '1.5s', duration: '3.1s' },
-                { top: '48%', left: '86%', size: 4, delay: '0.9s', duration: '2.7s' },
-                { top: '76%', left: '20%', size: 3, delay: '1.2s', duration: '3.3s' },
-                { top: '36%', left: '78%', size: 2.5, delay: '0.6s', duration: '2.3s' },
+                { top: '30%', left: '30%', size: 4, delay: '0s', duration: '2.6s' },
+                { top: '40%', left: '40%', size: 3, delay: '0.8s', duration: '3.2s' },
+                { top: '50%', left: '50%', size: 5, delay: '1.4s', duration: '2.4s' },
+                { top: '60%', left: '45%', size: 3, delay: '2.1s', duration: '3.6s' },
+                { top: '45%', left: '20%', size: 4.5, delay: '0.3s', duration: '3.0s' },
+                { top: '35%', left: '55%', size: 3, delay: '1.7s', duration: '2.8s' },
+                { top: '55%', left: '35%', size: 4, delay: '1.1s', duration: '3.4s' },
+                { top: '42%', left: '60%', size: 2.5, delay: '2.4s', duration: '3.9s' },
+                { top: '65%', left: '25%', size: 3.5, delay: '1.5s', duration: '3.1s' },
+                { top: '25%', left: '45%', size: 4, delay: '0.9s', duration: '2.7s' },
+                { top: '48%', left: '70%', size: 3, delay: '1.2s', duration: '3.3s' },
+                { top: '52%', left: '15%', size: 2.5, delay: '0.6s', duration: '2.3s' },
               ].map((dot, index) => (
-                <span
-                  key={`left-glow-dot-${index}`}
-                  className="golden-glowing-dot"
-                  style={{
-                    top: dot.top,
-                    left: dot.left,
-                    width: `${dot.size}px`,
-                    height: `${dot.size}px`,
-                    animationDelay: dot.delay,
-                    animationDuration: dot.duration,
-                  }}
-                />
+                <span key={`left-glow-dot-${index}`} className="golden-glowing-dot" style={{ top: dot.top, left: dot.left, width: `${dot.size}px`, height: `${dot.size}px`, animationDelay: dot.delay, animationDuration: dot.duration }} />
               ))}
             </div>
           </div>
-
-          {/* Central Heritage Text */}
           <div className="relative z-10 text-center max-w-lg sm:max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-            <p className="text-[#D4AF37]/80 text-[10px] sm:text-xs tracking-[0.3em] uppercase mb-2 sm:mb-3 font-medium">
+            <p className="text-[#8A5A19] font-semibold text-[10px] sm:text-xs tracking-[0.3em] uppercase mb-2 sm:mb-3 font-medium">
               Embrace the Heritage
             </p>
-            <h1 className="font-serif text-xl sm:text-3xl md:text-[34px] lg:text-[38px] text-[#D4AF37] leading-snug md:leading-tight mb-3 sm:mb-4 drop-shadow-[0_2px_15px_rgba(212,175,55,0.25)]">
+            <h1 className="font-serif text-xl sm:text-3xl md:text-[34px] lg:text-[38px] text-[#1F3324] leading-snug md:leading-tight mb-3 sm:mb-4">
               Inspired by the Divine Grace of <br className="hidden sm:block" />
-              <span className="italic font-light text-[#F5E6BE]">Kanchi & Kamakshi Amma</span>
+              <span className="italic font-medium text-[#8A5A19] font-semibold">Kanchi & Kamakshi Amma</span>
             </h1>
-            
-            <p className="text-[#FFF8E7]/80 text-xs sm:text-[13px] tracking-wide leading-relaxed max-w-md md:max-w-lg mx-auto font-light">
+            <p className="text-[#1F3324] text-xs sm:text-[13px] tracking-wide leading-relaxed max-w-md md:max-w-lg mx-auto font-medium">
               Step into a world of timeless elegance. Handcrafted weaves, pure zari craftsmanship, and exquisite heritage treasures curated for life&apos;s sacred celebrations.
             </p>
           </div>
@@ -293,179 +226,65 @@ export default function Home() {
           {/* Right Golden Branch & Glowing Dots - connected directly to right edge of page */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-20 sm:w-44 md:w-72 lg:w-[380px] xl:w-[460px] 2xl:w-[540px] pointer-events-none select-none z-0 transition-all duration-500 opacity-25 sm:opacity-95 md:opacity-100 translate-x-3 sm:translate-x-0">
             <div className="relative w-full h-full">
-              <Image
-                src="/images/golden_branch_right.png"
-                alt="Right Decorative Golden Branch"
-                width={1024}
-                height={682}
-                className="w-full h-auto object-contain"
-                priority
-              />
-              
-              {/* Little Glowing Golden Dots around Right Branch */}
+              <Image src="/images/golden_branch_right.png" alt="Right Decorative Golden Branch" width={1024} height={682} className="w-full h-auto object-contain" priority />
               {[
-                { top: '10%', right: '78%', size: 4, delay: '0.4s', duration: '2.8s' },
-                { top: '16%', right: '60%', size: 3, delay: '1.2s', duration: '3.3s' },
-                { top: '22%', right: '88%', size: 5, delay: '1.8s', duration: '2.5s' },
-                { top: '32%', right: '48%', size: 3, delay: '0.2s', duration: '3.5s' },
-                { top: '42%', right: '70%', size: 4.5, delay: '1.5s', duration: '3.1s' },
-                { top: '54%', right: '32%', size: 3, delay: '2.0s', duration: '3.2s' },
-                { top: '64%', right: '44%', size: 4, delay: '0.7s', duration: '3.7s' },
-                { top: '26%', right: '36%', size: 2.5, delay: '1.6s', duration: '4.1s' },
-                { top: '6%', right: '85%', size: 3.5, delay: '0.5s', duration: '3.0s' },
-                { top: '48%', right: '86%', size: 4, delay: '2.3s', duration: '2.7s' },
-                { top: '76%', right: '20%', size: 3, delay: '0.9s', duration: '3.4s' },
-                { top: '36%', right: '78%', size: 2.5, delay: '1.7s', duration: '2.4s' },
+                { top: '30%', right: '30%', size: 4, delay: '0.4s', duration: '2.8s' },
+                { top: '40%', right: '40%', size: 3, delay: '1.2s', duration: '3.3s' },
+                { top: '50%', right: '50%', size: 5, delay: '1.8s', duration: '2.5s' },
+                { top: '60%', right: '45%', size: 3, delay: '0.2s', duration: '3.5s' },
+                { top: '45%', right: '20%', size: 4.5, delay: '1.5s', duration: '3.1s' },
+                { top: '35%', right: '55%', size: 3, delay: '2.0s', duration: '3.2s' },
+                { top: '55%', right: '35%', size: 4, delay: '0.7s', duration: '3.7s' },
+                { top: '42%', right: '60%', size: 2.5, delay: '1.6s', duration: '4.1s' },
+                { top: '65%', right: '25%', size: 3.5, delay: '0.5s', duration: '3.0s' },
+                { top: '25%', right: '45%', size: 4, delay: '2.3s', duration: '2.7s' },
+                { top: '48%', right: '70%', size: 3, delay: '0.9s', duration: '3.4s' },
+                { top: '52%', right: '15%', size: 2.5, delay: '1.7s', duration: '2.4s' },
               ].map((dot, index) => (
-                <span
-                  key={`right-glow-dot-${index}`}
-                  className="golden-glowing-dot"
-                  style={{
-                    top: dot.top,
-                    right: dot.right,
-                    width: `${dot.size}px`,
-                    height: `${dot.size}px`,
-                    animationDelay: dot.delay,
-                    animationDuration: dot.duration,
-                  }}
-                />
+                <span key={`right-glow-dot-${index}`} className="golden-glowing-dot" style={{ top: dot.top, right: dot.right, width: `${dot.size}px`, height: `${dot.size}px`, animationDelay: dot.delay, animationDuration: dot.duration }} />
               ))}
             </div>
           </div>
         </section>
 
-        {/* Explore Collection Section */}
-        {loading ? (
-          <div className="flex justify-center items-center py-16 w-full">
-            <LotusAnimation />
+        {/* Categories Section (New) */}
+        <section className="w-full max-w-5xl mx-auto px-4 mt-8 sm:mt-12">
+          <div className="text-center mb-10">
+            <p className="text-[#8A5A19] font-semibold font-semibold text-[11px] sm:text-xs tracking-[0.25em] uppercase mb-2 flex items-center justify-center gap-3">
+              <span className="w-8 h-[1px] bg-[#D4AF37]/50"></span>
+              EXPLORE OUR COLLECTIONS
+              <span className="w-8 h-[1px] bg-[#D4AF37]/50"></span>
+            </p>
+            <h2 className="text-[#1F3324] font-serif text-3xl sm:text-4xl mt-3">Find your perfect weave</h2>
           </div>
-        ) : (
-          <div className="w-full flex flex-col -mt-2 sm:-mt-6">
-            <section className="w-full max-w-7xl mx-auto px-4">
-              <div className="text-center mb-8 flex flex-col items-center">
-                <LotusIcon className="w-8 h-8 sm:w-9 sm:h-9 mb-2 opacity-95" />
-                <h2 className="text-[#D4AF37] font-serif text-2xl sm:text-3xl mb-2">Explore Collection</h2>
-                <p className="text-[#FFF8E7]/60 text-xs sm:text-sm tracking-wide font-light">Handpicked treasures curated just for you</p>
-              </div>
 
-              {products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto w-full">
-                  {products.map((product) => (
-                    <Link 
-                      href={`/product/${product.id}`} 
-                      key={product.id}
-                      className="group relative flex flex-col bg-[#1A0106] rounded-md border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300 overflow-hidden active:scale-[0.99]"
-                    >
-                      <div className="relative aspect-[4/5] w-full overflow-hidden border-b border-[#D4AF37]/30">
-                        <Image
-                          src={product.image_url}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        {calculateDiscountPercent(product.original_price, product.discount_price) && (
-                          <div className="absolute top-3 left-3 bg-[#D4AF37] text-[#210209] text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded-sm shadow-md">
-                            {calculateDiscountPercent(product.original_price, product.discount_price)}% Off
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-5 flex flex-col flex-1 items-center text-center">
-                        <h3 className="text-[#D4AF37] font-serif text-lg mb-2">{product.name}</h3>
-                        {product.description && (
-                          <p className="text-[#FFF8E7]/70 text-xs line-clamp-2 mb-4 leading-relaxed font-light">{product.description}</p>
-                        )}
-                        <div className="mt-auto flex flex-col items-center gap-1">
-                          {product.discount_price ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-[#D4AF37] font-medium">₹{product.discount_price.toLocaleString('en-IN')}</span>
-                              <span className="text-[#FFF8E7]/50 text-xs line-through decoration-[#D4AF37]/50">₹{product.original_price?.toLocaleString('en-IN')}</span>
-                            </div>
-                          ) : product.original_price ? (
-                            <span className="text-[#D4AF37] font-medium">₹{product.original_price.toLocaleString('en-IN')}</span>
-                          ) : null}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <p className="font-serif text-2xl sm:text-3xl text-[#D4AF37] tracking-[0.3em] uppercase font-light drop-shadow-[0_2px_15px_rgba(212,175,55,0.25)]">
-                    Coming Soon
-                  </p>
-                  <p className="text-[#FFF8E7]/50 text-xs tracking-[0.15em] uppercase mt-3 font-light">
-                    Curating sacred treasures for life&apos;s celebrations
-                  </p>
-                </div>
-              )}
-            </section>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6">
+            <CategoryGrid />
           </div>
-        )}
+
+        </section>
 
       </main>
 
-      {/* Sleek Horizontal Footer Bar */}
-      <footer className="w-full bg-[#140004] border-t border-[#D4AF37]/25 py-6 px-4 sm:px-6 lg:px-8 text-[#D4AF37]/70">
+      {/* Footer */}
+      <footer className="w-full bg-[#E1C7BB] border-t border-[#1F3324]/10 py-6 px-4 sm:px-6 lg:px-8 text-[#1F3324]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          {/* Left: Copyright */}
-          <p className="text-[11px] uppercase tracking-widest text-[#D4AF37]/60">
+          <p className="text-[11px] uppercase tracking-widest text-[#1F3324]">
             &copy; {new Date().getFullYear()} JKK Silks. All Rights Reserved.
           </p>
-
-          {/* Right in series: Address | Contact Us | Logos */}
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-5 gap-y-2.5 text-xs">
-            {/* Address */}
-            <span className="text-[11px] uppercase tracking-[0.2em] text-[#FFF8E7]/70">
-              Wyra, Khammam
-            </span>
-
-            <span className="hidden sm:inline text-[#D4AF37]/30">&bull;</span>
-
-            {/* Contact Us & Phone */}
+            <span className="text-[11px] uppercase tracking-[0.2em] text-[#1F3324]">Wyra, Khammam</span>
+            <span className="hidden sm:inline text-[#1F3324]">&bull;</span>
             <div className="flex items-center gap-1.5 text-[11px] tracking-wider">
-              <span className="uppercase text-[#D4AF37] font-medium tracking-widest">Contact Us:</span>
-              <a 
-                href="https://wa.me/916309143484" 
-                target="_blank" 
-                rel="noreferrer"
-                className="text-[#FFF8E7] hover:text-[#25D366] transition-colors font-medium tracking-wider"
-              >
-                +91 6309 143 484
-              </a>
-            </div>
-
-            <span className="hidden sm:inline text-[#D4AF37]/30">&bull;</span>
-
-            {/* Logos of Mail and Instagram */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setEnquiryModalOpen(true)}
-                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.15)] active:scale-95"
-                title="Email Enquiry"
-                aria-label="Email"
-              >
-                <Mail className="w-3.5 h-3.5" />
-              </button>
-
-              <a 
-                href="https://www.instagram.com/jkk_silks?stkn=MWttamdoangxZWEzeA==" 
-                target="_blank" 
-                rel="noreferrer"
-                className="w-8 h-8 rounded-full border border-[#D4AF37]/40 hover:border-[#D4AF37] text-[#D4AF37] hover:text-[#FFF8E7] hover:bg-[#D4AF37]/10 flex items-center justify-center transition-all shadow-[0_0_10px_rgba(212,175,55,0.15)] active:scale-95"
-                title="Instagram"
-                aria-label="Instagram"
-              >
-                <InstagramIcon className="w-3.5 h-3.5" />
-              </a>
+              <span className="uppercase text-[#1F3324] font-medium tracking-widest">Contact Us:</span>
+              <a href="https://wa.me/916309143484" target="_blank" rel="noreferrer" className="text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors font-medium">+91 6309 143 484</a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Floating Quick Contact & Enquiry Modal */}
       <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
       <EnquiryModal isOpen={enquiryModalOpen} onClose={() => setEnquiryModalOpen(false)} />
-      
     </div>
   );
 }

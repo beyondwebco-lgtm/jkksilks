@@ -28,18 +28,39 @@ export default function AdminCategoryPage() {
   const [originalPrice, setOriginalPrice] = useState('');
   const [discountPrice, setDiscountPrice] = useState('');
   const [isExploreCollection, setIsExploreCollection] = useState(false);
+  const [categorySelect, setCategorySelect] = useState(category);
+  const [colorSwatchHex, setColorSwatchHex] = useState('#D4AF37');
+  const [colorSwatchName, setColorSwatchName] = useState('');
+  const [fabricSpec, setFabricSpec] = useState('');
+  const [weavingCraft, setWeavingCraft] = useState('');
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
 
   // Edit modal state
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editColorSwatchHex, setEditColorSwatchHex] = useState('#D4AF37');
+  const [editColorSwatchName, setEditColorSwatchName] = useState('');
+  const [editFabricSpec, setEditFabricSpec] = useState('');
   const [editOriginalPrice, setEditOriginalPrice] = useState('');
   const [editDiscountPrice, setEditDiscountPrice] = useState('');
   const [editIsExplore, setEditIsExplore] = useState(false);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [editUploadItems, setEditUploadItems] = useState<UploadItem[]>([]);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // Subcategories state
+  type SubCategory = { id: string; name: string; description?: string; coverImage?: string; count: number; section: string };
+  const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
+  const [newSubCatName, setNewSubCatName] = useState('');
+  const [newSubCatDesc, setNewSubCatDesc] = useState('');
+  const [newSubCatCover, setNewSubCatCover] = useState('');
+  const [newSubCatUpload, setNewSubCatUpload] = useState<UploadItem | null>(null);
+  const [isSavingSubCat, setIsSavingSubCat] = useState(false);
+  const [editingSubCatId, setEditingSubCatId] = useState<string | null>(null);
+
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'details' | 'products'>('details');
 
   const uploadSingleImageToR2 = async (file: File): Promise<string> => {
     const res = await fetch('/api/upload', {
@@ -68,7 +89,19 @@ export default function AdminCategoryPage() {
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
     setEditName(product.name);
-    setEditDescription(product.description || '');
+    
+    let parsedDesc = { text: product.description || '', colorName: '', colorHex: '#D4AF37', fabricSpec: '' };
+    try {
+      if (product.description && product.description.trim().startsWith('{')) {
+        parsedDesc = { ...parsedDesc, ...JSON.parse(product.description) };
+      }
+    } catch (e) {}
+
+    setEditDescription(parsedDesc.text);
+    setEditColorSwatchName(parsedDesc.colorName);
+    setEditColorSwatchHex(parsedDesc.colorHex);
+    setEditFabricSpec(parsedDesc.fabricSpec);
+    
     setEditOriginalPrice(product.original_price ? product.original_price.toString() : '');
     setEditDiscountPrice(product.discount_price ? product.discount_price.toString() : '');
     setEditIsExplore(product.is_explore_collection || false);
@@ -100,11 +133,18 @@ export default function AdminCategoryPage() {
         return;
       }
 
+      const descJson = JSON.stringify({
+        text: editDescription || '',
+        colorName: editColorSwatchName || '',
+        colorHex: editColorSwatchHex || '#D4AF37',
+        fabricSpec: editFabricSpec || ''
+      });
+
       const { data, error } = await supabase
         .from('products')
         .update({
           name: editName,
-          description: editDescription,
+          description: descJson,
           image_url: updatedImageUrls[0],
           original_price: editOriginalPrice ? parseFloat(editOriginalPrice) : null,
           discount_price: editDiscountPrice ? parseFloat(editDiscountPrice) : null,
@@ -149,12 +189,36 @@ export default function AdminCategoryPage() {
   useEffect(() => {
     let isMounted = true;
 
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
+        // Fetch Category details
+        const categoryNamesToQuery: string[] = [category];
+
+        // Fetch Subcategories first to populate category dropdown and build query list
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const allCategories = await res.json();
+          const sectionCategories = allCategories.filter((c: SubCategory) => c.section === category);
+          if (isMounted) {
+            setSubcategories(sectionCategories);
+            if (sectionCategories.length > 0 && categorySelect === category) {
+              setCategorySelect(sectionCategories[0].name);
+            }
+          }
+          
+          // Add all subcategory names to the query list
+          sectionCategories.forEach((c: SubCategory) => {
+            if (!categoryNamesToQuery.includes(c.name)) {
+              categoryNamesToQuery.push(c.name);
+            }
+          });
+        }
+
+        // Fetch Products
         const { data, error } = await supabase
           .from('products')
           .select('*')
-          .eq('category', category)
+          .in('category', categoryNamesToQuery)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -162,9 +226,9 @@ export default function AdminCategoryPage() {
           setProducts(data || []);
         }
       } catch (err: unknown) {
-        console.error('Error fetching products:', err);
+        console.error('Error fetching data:', err);
         if (isMounted) {
-          setFetchError('Unable to fetch products. Ensure Supabase is connected.');
+          setFetchError('Unable to fetch data. Ensure Supabase is connected.');
         }
       } finally {
         if (isMounted) {
@@ -173,7 +237,7 @@ export default function AdminCategoryPage() {
       }
     };
 
-    loadProducts();
+    loadData();
 
     return () => {
       isMounted = false;
@@ -283,7 +347,124 @@ export default function AdminCategoryPage() {
     return null;
   };
 
-  const discountPercent = calculateDiscountPercent(originalPrice, discountPrice);
+
+
+  const handleSubCatImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setNewSubCatUpload({
+        file,
+        preview: URL.createObjectURL(file),
+      });
+    }
+  };
+
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      if (activeTab === 'details' && e.clipboardData?.files && e.clipboardData.files.length > 0) {
+        const file = e.clipboardData.files[0];
+        if (file.type.startsWith('image/')) {
+          setNewSubCatUpload({
+            file,
+            preview: URL.createObjectURL(file),
+          });
+        }
+      }
+    };
+    
+    document.addEventListener('paste', handleGlobalPaste);
+    return () => {
+      document.removeEventListener('paste', handleGlobalPaste);
+    };
+  }, [activeTab]);
+
+  const removeSubCatUploadItem = () => {
+    if (newSubCatUpload) {
+      URL.revokeObjectURL(newSubCatUpload.preview);
+    }
+    setNewSubCatUpload(null);
+  };
+
+  const handleSaveSubCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSubCatName) return;
+    setIsSavingSubCat(true);
+
+    try {
+      let finalCoverImageUrl = newSubCatCover;
+      
+      // Upload new cover image if selected
+      if (newSubCatUpload) {
+        finalCoverImageUrl = await uploadSingleImageToR2(newSubCatUpload.file);
+      }
+
+      const method = editingSubCatId ? 'PUT' : 'POST';
+      const body = editingSubCatId ? {
+        id: editingSubCatId,
+        name: newSubCatName,
+        section: category,
+        description: newSubCatDesc,
+        coverImage: finalCoverImageUrl
+      } : {
+        name: newSubCatName,
+        section: category,
+        description: newSubCatDesc,
+        coverImage: finalCoverImageUrl
+      };
+
+      const res = await fetch('/api/categories', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error('Failed to save category');
+      
+      const savedCat = await res.json();
+      
+      if (editingSubCatId) {
+        setSubcategories(prev => prev.map(c => c.id === editingSubCatId ? { ...c, ...savedCat } : c));
+      } else {
+        setSubcategories(prev => [...prev, savedCat]);
+        if (subcategories.length === 0) setCategorySelect(savedCat.name);
+      }
+      
+      setNewSubCatName('');
+      setNewSubCatDesc('');
+      setNewSubCatCover('');
+      setEditingSubCatId(null);
+      if (newSubCatUpload) {
+        URL.revokeObjectURL(newSubCatUpload.preview);
+        setNewSubCatUpload(null);
+      }
+      alert('Category saved successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save category.');
+    } finally {
+      setIsSavingSubCat(false);
+    }
+  };
+
+  const handleDeleteSubCategory = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+    try {
+      const res = await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete category');
+      setSubcategories(prev => prev.filter(c => c.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete category.');
+    }
+  };
+
+  const startEditingSubCat = (cat: SubCategory) => {
+    setEditingSubCatId(cat.id);
+    setNewSubCatName(cat.name);
+    setNewSubCatDesc(cat.description || '');
+    setNewSubCatCover(cat.coverImage || '');
+    setNewSubCatUpload(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -300,13 +481,20 @@ export default function AdminCategoryPage() {
 
       const primaryImageUrl = uploadedUrls[0];
 
+      const descJson = JSON.stringify({
+        text: description || '',
+        colorName: colorSwatchName || '',
+        colorHex: colorSwatchHex || '#D4AF37',
+        fabricSpec: fabricSpec || ''
+      });
+
       // 2. Save product into Supabase
       const { data, error: dbError } = await supabase
         .from('products')
         .insert({
           name,
-          category,
-          description: description || null,
+          category: categorySelect,
+          description: descJson,
           original_price: originalPrice ? parseFloat(originalPrice) : null,
           discount_price: discountPrice ? parseFloat(discountPrice) : null,
           image_url: primaryImageUrl,
@@ -338,17 +526,186 @@ export default function AdminCategoryPage() {
 
   return (
     <div className="space-y-12">
-      <div className="border-b border-[#D4AF37]/20 pb-4 flex items-center justify-between">
+      <div className="border-b border-[#8A5A19]/20 pb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-serif text-[#D4AF37] capitalize tracking-wide">{category}</h1>
-          <p className="text-[#D4AF37]/60 text-xs uppercase tracking-[0.2em] mt-2">Manage & Upload Multiple Photos</p>
+          <h1 className="text-3xl font-serif text-[#1F3324] capitalize tracking-wide">{category}</h1>
+          <p className="text-[#1F3324] font-semibold text-xs uppercase tracking-[0.2em] mt-2">Manage & Upload Multiple Photos</p>
         </div>
       </div>
+      <div className="flex gap-4 border-b border-[#8A5A19]/20 pb-1 mb-8">
+        <button 
+          onClick={() => setActiveTab('details')}
+          className={`px-6 py-2 text-xs font-semibold tracking-widest uppercase transition-all border-b-2 ${activeTab === 'details' ? 'border-[#8A5A19] text-[#1F3324]' : 'border-transparent text-[#1F3324] font-semibold hover:text-[#1F3324] font-semibold'}`}
+        >
+          Manage Categories
+        </button>
+        <button 
+          onClick={() => setActiveTab('products')}
+          className={`px-6 py-2 text-xs font-semibold tracking-widest uppercase transition-all border-b-2 ${activeTab === 'products' ? 'border-[#8A5A19] text-[#1F3324]' : 'border-transparent text-[#1F3324] font-semibold hover:text-[#1F3324] font-semibold'}`}
+        >
+          Manage Inventory
+        </button>
+      </div>
 
-      {/* Upload Form */}
-      <section className="bg-[#1A0106] border border-[#D4AF37]/30 p-6 sm:p-8 rounded-sm shadow-[0_0_25px_rgba(212,175,55,0.06)]">
-        <h2 className="text-[#D4AF37] font-serif text-xl mb-6 flex items-center gap-3">
-          <Sparkles className="w-5 h-5 text-[#D4AF37]" /> Upload New {category.slice(0, -1) || category}
+      {activeTab === 'details' && (
+      <section className="bg-[#EAE3D9]/60 border border-[#8A5A19]/30 p-6 sm:p-8 rounded-sm shadow-[0_4px_25px_rgba(138,90,25,0.08)] space-y-8">
+        <div>
+          <h2 className="text-[#1F3324] font-serif text-xl mb-6 flex items-center gap-3">
+            <Edit className="w-5 h-5 text-[#1F3324]" /> Manage Subcategories
+          </h2>
+          
+          {subcategories.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {subcategories.map(cat => (
+                <div key={cat.id} className="flex items-center gap-4 bg-white/40 p-3 border border-[#8A5A19]/20 rounded-sm">
+                  <div className="relative w-16 h-16 rounded-sm overflow-hidden flex-shrink-0 bg-white/60 border border-[#8A5A19]/30">
+                    {cat.coverImage ? (
+                      <Image src={cat.coverImage} alt={cat.name} fill className="object-cover" />
+                    ) : (
+                      <Image src="/images/logo.jpg" alt="Default" fill className="object-cover opacity-20 grayscale" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-[#1F3324] font-semibold text-sm capitalize">{cat.name}</h4>
+                    <p className="text-[#1F3324] font-semibold text-[10px] line-clamp-1 mt-0.5">{cat.description || 'No description'}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => startEditingSubCat(cat)} className="p-2 text-[#1F3324] font-semibold hover:text-[#1F3324] hover:bg-[#1F3324]/10 rounded-sm" title="Edit">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDeleteSubCategory(cat.id)} className="p-2 text-red-400/70 hover:text-red-400 hover:bg-red-900/20 rounded-sm" title="Delete">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[#1F3324] font-semibold text-sm">No categories added yet. Add one below.</p>
+          )}
+        </div>
+
+        <div className="pt-8 border-t border-[#8A5A19]/20">
+          <h3 className="text-[#1F3324] font-serif text-lg mb-6">
+            {editingSubCatId ? 'Edit Subcategory' : 'Add New Subcategory'}
+          </h3>
+          <form onSubmit={handleSaveSubCategory} className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Category Name *</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={newSubCatName}
+                    onChange={(e) => setNewSubCatName(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm text-sm"
+                    placeholder="e.g. Cotton, Kanjeevaram"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Category Description</label>
+                  <textarea 
+                    value={newSubCatDesc}
+                    onChange={(e) => setNewSubCatDesc(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm resize-none placeholder-[#1F3324]/30 text-sm"
+                    placeholder={`Describe the category...`}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold">Cover Photo</label>
+                
+                <div className="flex gap-4 items-start">
+                  <div className="relative aspect-square w-32 rounded-sm overflow-hidden border border-[#8A5A19]/30 bg-white/40 flex-shrink-0">
+                    {(newSubCatUpload?.preview || newSubCatCover) ? (
+                      <Image src={newSubCatUpload?.preview || newSubCatCover} alt="Cover" fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-[#1F3324] font-semibold">
+                        <Image src="/images/logo.jpg" alt="Default" fill className="object-cover opacity-20 grayscale" />
+                        <span className="text-[10px] uppercase z-10 mt-2">No Cover</span>
+                      </div>
+                    )}
+                    {newSubCatUpload && (
+                      <button
+                        type="button"
+                        onClick={removeSubCatUploadItem}
+                        className="absolute top-1 right-1 bg-white/60 hover:bg-red-500 text-[#1F3324] text-[9px] p-1 rounded-sm shadow-md"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-3">
+                    <label 
+                      htmlFor="subcategory-cover-upload" 
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter') document.getElementById('subcategory-cover-upload')?.click(); }}
+                      className="cursor-pointer inline-flex flex-col items-center justify-center w-full px-4 py-4 border border-[#8A5A19]/30 border-dashed rounded-sm hover:border-[#8A5A19] transition-all bg-[#1F3324]/5 hover:bg-[#1F3324]/10 focus:outline-none focus:border-[#8A5A19]/60"
+                    >
+                      <div className="flex items-center mb-1">
+                        <Upload className="h-4 w-4 text-[#1F3324] font-semibold mr-2" />
+                        <span className="text-xs font-medium text-[#1F3324]">Click to Upload</span>
+                      </div>
+                      <span className="text-[10px] text-[#1F3324] font-semibold">(Or click and Cmd+V to paste)</span>
+                      <input 
+                        id="subcategory-cover-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="sr-only" 
+                        onChange={handleSubCatImageChange} 
+                      />
+                    </label>
+
+                    <input 
+                      type="text" 
+                      value={newSubCatUpload ? '' : newSubCatCover} 
+                      onChange={(e) => { setNewSubCatCover(e.target.value); setNewSubCatUpload(null); }}
+                      placeholder="Or paste an image URL..." 
+                      className="w-full px-3 py-2 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm text-xs placeholder-[#1F3324]/30"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-[#8A5A19]/20 gap-4">
+              {editingSubCatId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSubCatId(null);
+                    setNewSubCatName('');
+                    setNewSubCatDesc('');
+                    setNewSubCatCover('');
+                    setNewSubCatUpload(null);
+                  }}
+                  className="px-6 py-2.5 rounded-sm font-semibold text-xs tracking-widest uppercase transition-all text-[#1F3324] hover:bg-[#1F3324]/10 border border-[#8A5A19]/30"
+                >
+                  Cancel
+                </button>
+              )}
+              <button 
+                type="submit" 
+                disabled={isSavingSubCat}
+                className="bg-[#1F3324] hover:bg-[#8A5A19] text-[#EBD4C9] px-8 py-2.5 rounded-sm font-semibold text-xs tracking-widest uppercase transition-all shadow-[0_4px_15px_rgba(138,90,25,0.15)] disabled:opacity-50"
+              >
+                {isSavingSubCat ? 'Saving...' : (editingSubCatId ? 'Update Subcategory' : 'Add Subcategory')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+      )}
+      {activeTab === 'products' && (
+        <div className="space-y-12">
+          {/* Upload Form */}
+          <section className="bg-[#EAE3D9]/60 border border-[#8A5A19]/30 p-6 sm:p-8 rounded-sm shadow-[0_4px_25px_rgba(138,90,25,0.08)]">
+        <h2 className="text-[#1F3324] font-serif text-xl mb-6 flex items-center gap-3">
+          <Sparkles className="w-5 h-5 text-[#1F3324]" /> Upload New {category.slice(0, -1) || category}
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -358,115 +715,119 @@ export default function AdminCategoryPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column: Product Info & Pricing */}
-            <div className="space-y-5">
+          <div className="space-y-6">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Row 1 */}
               <div>
-                <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-2">Product Name *</label>
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Saree Title *</label>
                 <input 
                   type="text" 
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-transparent border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none rounded-sm placeholder-[#D4AF37]/30"
-                  placeholder={`e.g. Midnight Black Silk Saree`}
+                  className="w-full px-4 py-2.5 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm placeholder-[#1F3324]/30 text-sm"
+                  placeholder="e.g. Mulberry Silk Handloom Saree"
                 />
               </div>
-
-              {/* Pricing Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-2">Original MRP (₹)</label>
-                  <input 
-                    type="number" 
-                    min="0"
-                    step="1"
-                    value={originalPrice}
-                    onChange={(e) => setOriginalPrice(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-transparent border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] outline-none rounded-sm placeholder-[#D4AF37]/30"
-                    placeholder="e.g. 1999"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-2">Discounted Offer (₹)</label>
-                  <input 
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={discountPrice}
-                    onChange={(e) => setDiscountPrice(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-transparent border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] outline-none rounded-sm placeholder-[#D4AF37]/30"
-                    placeholder="e.g. 1699"
-                  />
-                </div>
-              </div>
-
-              {/* Price Preview Card matching user reference */}
-              {(originalPrice || discountPrice) && (
-                <div className="p-3 bg-[#2A050D] border border-[#D4AF37]/20 rounded-sm flex items-center gap-3">
-                  <span className="text-[11px] uppercase tracking-wider text-[#D4AF37]/60">Customer Price Tag:</span>
-                  <div className="flex items-center gap-2 font-medium">
-                    <span className="text-white text-sm font-bold">
-                      MRP ₹{discountPrice ? Number(discountPrice).toLocaleString('en-IN') : Number(originalPrice).toLocaleString('en-IN')}
-                    </span>
-                    {discountPrice && originalPrice && Number(originalPrice) > Number(discountPrice) && (
-                      <span className="text-gray-400 line-through text-xs">
-                        ₹{Number(originalPrice).toLocaleString('en-IN')}
-                      </span>
-                    )}
-                    {discountPercent && (
-                      <span className="text-[#E57373] text-xs font-bold italic">
-                        {discountPercent}% OFF
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
               <div>
-                <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-2">Description</label>
-                <textarea 
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2 bg-transparent border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] outline-none rounded-sm resize-none placeholder-[#D4AF37]/30 text-sm"
-                  placeholder="Fabric, weave details, blouse piece details, zari purity..."
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Category *</label>
+                <select 
+                  value={categorySelect}
+                  onChange={(e) => setCategorySelect(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm text-sm appearance-none capitalize"
+                >
+                  {subcategories.length > 0 ? (
+                    subcategories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))
+                  ) : (
+                    <option value={category}>{category}</option>
+                  )}
+                </select>
+              </div>
+
+              {/* Row 2 */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Sale Price (₹) *</label>
+                <input 
+                  type="number" 
+                  required
+                  value={discountPrice}
+                  onChange={(e) => setDiscountPrice(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm placeholder-[#1F3324]/30 text-sm"
+                  placeholder="e.g. 8999"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Original MRP (₹)</label>
+                <input 
+                  type="number" 
+                  value={originalPrice}
+                  onChange={(e) => setOriginalPrice(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm placeholder-[#1F3324]/30 text-sm"
+                  placeholder="e.g. 12499"
                 />
               </div>
 
-              {/* Explore Collection Checkbox */}
-              <div className="pt-2">
-                <label className="flex items-center gap-3 cursor-pointer select-none">
+              {/* Row 3 */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Color Palette Swatch *</label>
+                <div className="flex bg-white/40 border border-[#8A5A19]/20 rounded-sm focus-within:border-[#8A5A19]/60 overflow-hidden h-[42px]">
                   <input 
-                    type="checkbox" 
-                    checked={isExploreCollection}
-                    onChange={(e) => setIsExploreCollection(e.target.checked)}
-                    className="w-4 h-4 accent-[#D4AF37] cursor-pointer rounded"
+                    type="color"
+                    value={colorSwatchHex}
+                    onChange={(e) => setColorSwatchHex(e.target.value)}
+                    className="h-full w-12 cursor-pointer border-none p-0 outline-none bg-transparent"
                   />
-                  <span className="text-xs uppercase tracking-wider text-[#D4AF37] font-medium">
-                    Feature in &quot;Explore Collection&quot; on Homepage
-                  </span>
-                </label>
+                  <input 
+                    type="text"
+                    value={colorSwatchName}
+                    onChange={(e) => setColorSwatchName(e.target.value)}
+                    placeholder="e.g. Royal Gold"
+                    className="flex-1 px-3 bg-transparent text-[#1F3324] text-sm outline-none placeholder-[#1F3324]/30"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Fabric Specification</label>
+                <input 
+                  type="text" 
+                  value={fabricSpec}
+                  onChange={(e) => setFabricSpec(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm placeholder-[#1F3324]/30 text-sm"
+                  placeholder="e.g. 100% Pure Mulberry Silk"
+                />
               </div>
             </div>
 
-            {/* Right Column: Multiple Images Upload & Ordering */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80">
-                  Product Photos * {uploadItems.length > 0 && `(${uploadItems.length} selected)`}
-                </label>
-                <span className="text-[10px] text-[#D4AF37]/60 tracking-wider">First photo is Cover</span>
+            {/* Row 4 */}
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Weaving Craft</label>
+              <input 
+                type="text" 
+                value={weavingCraft}
+                onChange={(e) => setWeavingCraft(e.target.value)}
+                className="w-full md:w-1/2 px-4 py-2.5 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm placeholder-[#1F3324]/30 text-sm"
+                placeholder="e.g. Kanjivaram Antique Gold Zari Brocade"
+              />
+            </div>
+
+            {/* Photo Upload Section matching screenshot */}
+            <div className="pt-4 space-y-4">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#1F3324] font-semibold">
+                <Upload className="w-4 h-4" />
+                <span>Multi-Photo Cloudflare R2 Upload (Browse, Drag & Drop, or Paste `Ctrl+V` / `Cmd+V`) *</span>
               </div>
 
               {/* Upload Drop Zone */}
               <label 
                 htmlFor="multi-file-upload" 
-                className="cursor-pointer w-full h-32 flex flex-col justify-center items-center border border-[#D4AF37]/30 border-dashed rounded-sm hover:border-[#D4AF37] transition-all bg-[#D4AF37]/5 hover:bg-[#D4AF37]/10"
+                className="cursor-pointer w-full h-32 flex flex-col justify-center items-center border border-[#8A5A19]/30 border-dashed rounded-sm hover:border-[#8A5A19] transition-all bg-[#1F3324]/5 hover:bg-[#1F3324]/10"
               >
-                <Upload className="h-6 w-6 text-[#D4AF37]/70 mb-2" />
-                <span className="text-sm font-medium text-[#D4AF37]">Click to select photos (Multiple allowed)</span>
-                <span className="text-xs text-[#D4AF37]/60 mt-1">Or paste anywhere with Cmd+V / Ctrl+V</span>
+                <Upload className="h-6 w-6 text-[#1F3324] font-semibold mb-2" />
+                <span className="text-sm font-medium text-[#1F3324]">Click to select photos (Multiple allowed)</span>
+                <span className="text-xs text-[#1F3324] font-semibold mt-1">Or paste anywhere with Cmd+V / Ctrl+V</span>
                 <input 
                   id="multi-file-upload" 
                   type="file" 
@@ -480,29 +841,28 @@ export default function AdminCategoryPage() {
               {/* Previews & Cover Selection */}
               {uploadItems.length > 0 && (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-56 overflow-y-auto p-2 border border-[#D4AF37]/20 rounded-sm bg-[#120104]">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-56 overflow-y-auto p-2 border border-[#8A5A19]/20 rounded-sm bg-[#120104]">
                     {uploadItems.map((item, idx) => (
                       <div 
                         key={idx} 
                         className={`relative aspect-square rounded-sm overflow-hidden border ${
-                          idx === 0 ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/50' : 'border-[#D4AF37]/30'
-                        } group bg-black/40`}
+                          idx === 0 ? 'border-[#8A5A19] ring-2 ring-[#D4AF37]/50' : 'border-[#8A5A19]/30'
+                        } group bg-white/40`}
                       >
                         <Image src={item.preview} alt={`Upload ${idx + 1}`} fill className="object-cover" />
                         
                         {/* Cover Badge */}
                         {idx === 0 ? (
-                          <div className="absolute top-1 left-1 bg-[#D4AF37] text-[#210209] text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 shadow-md">
+                          <div className="absolute top-1 left-1 bg-[#1F3324] text-[#EBD4C9] text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 shadow-md">
                             <Star className="w-2.5 h-2.5 fill-current" /> Cover
                           </div>
                         ) : (
                           <button
                             type="button"
                             onClick={() => setAsCover(idx)}
-                            className="absolute bottom-1 inset-x-1 bg-black/80 hover:bg-[#D4AF37] hover:text-[#210209] text-white text-[9px] py-1 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity font-medium text-center"
-                            title="Set as Cover Photo"
+                            className="absolute top-1 left-1 bg-white/60 hover:bg-[#1F3324] text-[#1F3324] hover:text-[#EBD4C9] text-[9px] font-medium px-1.5 py-0.5 rounded-sm opacity-0 group-hover:opacity-100 transition-all shadow-md"
                           >
-                            Set Cover
+                            Make Cover
                           </button>
                         )}
 
@@ -510,27 +870,40 @@ export default function AdminCategoryPage() {
                         <button 
                           type="button"
                           onClick={() => removeUploadItem(idx)}
-                          className="absolute top-1 right-1 bg-black/70 hover:bg-red-700 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition"
-                          title="Remove photo"
+                          className="absolute top-1 right-1 bg-white/60 hover:bg-red-500 text-[#1F3324] text-[9px] p-1 rounded-sm opacity-0 group-hover:opacity-100 transition-all shadow-md"
                         >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] text-[#D4AF37]/60 italic">
-                    Tip: Hover over any photo and click &quot;Set Cover&quot; to make it the primary display image.
-                  </p>
                 </div>
               )}
             </div>
+
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Craft Story Description</label>
+              <textarea 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="w-full px-4 py-3 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm resize-none placeholder-[#1F3324]/30 text-sm"
+                placeholder="Share the history and craft details of this piece..."
+              />
+            </div>
+
+            {uploadItems.length > 0 && (
+              <p className="text-[10px] text-[#1F3324] font-semibold italic">
+                Tip: Hover over any photo and click &quot;Set Cover&quot; to make it the primary display image.
+              </p>
+            )}
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-[#D4AF37]/20">
+          <div className="flex justify-end pt-4 border-t border-[#8A5A19]/20">
             <button
               type="submit"
               disabled={isUploading}
-              className="px-8 py-3 bg-[#D4AF37] text-[#210209] text-sm uppercase tracking-widest font-bold hover:bg-[#b5952f] disabled:opacity-70 transition-colors rounded-sm min-w-[170px] flex justify-center items-center shadow-lg"
+              className="px-8 py-3 bg-[#1F3324] text-[#EBD4C9] text-sm uppercase tracking-widest font-bold hover:bg-[#b5952f] disabled:opacity-70 transition-colors rounded-sm min-w-[170px] flex justify-center items-center shadow-lg"
             >
               {isUploading ? (
                 <div className="w-5 h-5 border-2 border-[#210209] border-t-transparent rounded-full animate-spin"></div>
@@ -545,21 +918,21 @@ export default function AdminCategoryPage() {
       {/* Product List */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[#D4AF37] font-serif text-xl">All {category} ({products.length})</h2>
-          <span className="text-xs text-[#D4AF37]/60">Changes reflect instantly on client pages</span>
+          <h2 className="text-[#1F3324] font-serif text-xl">All {category} ({products.length})</h2>
+          <span className="text-xs text-[#1F3324] font-semibold">Changes reflect instantly on client pages</span>
         </div>
         
         {loading ? (
           <div className="flex justify-center p-12">
-            <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-[#8A5A19] border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : fetchError && products.length === 0 ? (
           <div className="bg-red-900/20 border border-red-500/50 text-red-200 p-4 rounded-sm">
             {fetchError}
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center p-12 border border-[#D4AF37]/20 border-dashed rounded-sm">
-            <p className="text-[#D4AF37]/60 text-sm tracking-widest uppercase">No {category} found. Upload your first product above!</p>
+          <div className="text-center p-12 border border-[#8A5A19]/20 border-dashed rounded-sm">
+            <p className="text-[#1F3324] font-semibold text-sm tracking-widest uppercase">No {category} found. Upload your first product above!</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -571,9 +944,9 @@ export default function AdminCategoryPage() {
               const totalPhotos = (product.image_urls && product.image_urls.length > 0) ? product.image_urls.length : 1;
 
               return (
-                <div key={product.id} className="group border border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] rounded-md overflow-hidden bg-[#1A0106] transition-all duration-300 flex flex-col">
+                <div key={product.id} className="group border border-[#8A5A19] shadow-[0_4px_15px_rgba(138,90,25,0.15)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] rounded-md overflow-hidden bg-[#EAE3D9]/60 transition-all duration-300 flex flex-col">
                   {/* Image container */}
-                  <div className="relative aspect-[3/4] w-full border-b border-[#D4AF37]/20 bg-black/30">
+                  <div className="relative aspect-[3/4] w-full border-b border-[#8A5A19]/20 bg-white/30">
                     <Image 
                       src={product.image_url} 
                       alt={product.name} 
@@ -583,14 +956,14 @@ export default function AdminCategoryPage() {
 
                     {/* Multiple images count badge */}
                     {totalPhotos > 1 && (
-                      <span className="absolute bottom-2 left-2 bg-[#210209]/80 backdrop-blur-sm text-[#D4AF37] text-[10px] px-2 py-0.5 rounded-sm border border-[#D4AF37]/30">
+                      <span className="absolute bottom-2 left-2 bg-[#EAE3D9]/80 backdrop-blur-sm text-[#1F3324] text-[10px] px-2 py-0.5 rounded-sm border border-[#8A5A19]/30">
                         📷 {totalPhotos} photos
                       </span>
                     )}
 
                     {/* Explore collection tag */}
                     {product.is_explore_collection && (
-                      <span className="absolute top-2 left-2 bg-[#D4AF37] text-[#210209] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-md">
+                      <span className="absolute top-2 left-2 bg-[#1F3324] text-[#EBD4C9] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-md">
                         Featured
                       </span>
                     )}
@@ -600,7 +973,7 @@ export default function AdminCategoryPage() {
                       {/* Edit button */}
                       <button
                         onClick={() => openEditModal(product)}
-                        className="bg-[#D4AF37]/90 text-[#210209] p-2 rounded-full hover:bg-[#D4AF37] shadow-lg"
+                        className="bg-[#1F3324]/90 text-[#EBD4C9] p-2 rounded-full hover:bg-[#1F3324] shadow-lg"
                         title="Edit Product"
                       >
                         <Edit className="w-4 h-4" />
@@ -620,21 +993,21 @@ export default function AdminCategoryPage() {
                   {/* Info */}
                   <div className="p-4 text-center flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-[#D4AF37] font-serif text-base mb-1 truncate" title={product.name}>
+                      <h3 className="text-[#1F3324] font-serif text-base mb-1 truncate" title={product.name}>
                         {product.name}
                       </h3>
                       {product.description && (
-                        <p className="text-[#D4AF37]/60 text-xs line-clamp-1 italic mb-2">
+                        <p className="text-[#1F3324] font-semibold text-xs line-clamp-1 italic mb-2">
                           {product.description}
                         </p>
                       )}
                     </div>
 
                     {/* Pricing Display */}
-                    <div className="mt-2 pt-2 border-t border-[#D4AF37]/10 text-xs">
+                    <div className="mt-2 pt-2 border-t border-[#8A5A19]/10 text-xs">
                       {product.original_price || product.discount_price ? (
                         <div className="flex flex-wrap items-center justify-center gap-1.5">
-                          <span className="text-white font-bold">
+                          <span className="text-[#1F3324] font-bold">
                             MRP ₹{product.discount_price ? Number(product.discount_price).toLocaleString('en-IN') : Number(product.original_price).toLocaleString('en-IN')}
                           </span>
                           {product.discount_price && product.original_price && Number(product.original_price) > Number(product.discount_price) && (
@@ -649,7 +1022,7 @@ export default function AdminCategoryPage() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-[#D4AF37]/40 text-[11px]">Price on request</span>
+                        <span className="text-[#1F3324] font-semibold text-[11px]">Price on request</span>
                       )}
                     </div>
                   </div>
@@ -662,71 +1035,105 @@ export default function AdminCategoryPage() {
 
       {/* Edit Modal */}
       {editingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1A0106] border border-[#D4AF37] rounded-sm shadow-[0_0_30px_rgba(212,175,55,0.3)] w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center p-4 border-b border-[#D4AF37]/20">
-              <h3 className="text-[#D4AF37] font-serif text-xl">Edit Product</h3>
-              <button onClick={closeEditModal} className="text-[#D4AF37]/60 hover:text-[#D4AF37] transition">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 backdrop-blur-sm">
+          <div className="bg-[#EAE3D9]/60 border border-[#8A5A19] rounded-sm shadow-[0_0_30px_rgba(212,175,55,0.3)] w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-4 border-b border-[#8A5A19]/20">
+              <h3 className="text-[#1F3324] font-serif text-xl">Edit Product</h3>
+              <button onClick={closeEditModal} className="text-[#1F3324] font-semibold hover:text-[#1F3324] transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
             <form onSubmit={handleSaveEdit} className="p-6 overflow-y-auto space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-1">Product Name</label>
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-1">Product Name</label>
                 <input 
                   type="text" required value={editName} onChange={e => setEditName(e.target.value)}
-                  className="w-full px-3 py-2 bg-black/30 border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] outline-none rounded-sm"
+                  className="w-full px-3 py-2 bg-white/30 border border-[#8A5A19]/30 text-[#1F3324] focus:border-[#8A5A19] outline-none rounded-sm"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-1">Original Price (₹)</label>
+                  <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-1">Original Price (₹)</label>
                   <input 
                     type="number" min="0" step="1" value={editOriginalPrice} onChange={e => setEditOriginalPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-black/30 border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] outline-none rounded-sm"
+                    className="w-full px-3 py-2 bg-white/30 border border-[#8A5A19]/30 text-[#1F3324] focus:border-[#8A5A19] outline-none rounded-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-1">Discount Price (₹)</label>
+                  <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-1">Discount Price (₹)</label>
                   <input 
                     type="number" min="0" step="1" value={editDiscountPrice} onChange={e => setEditDiscountPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-black/30 border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] outline-none rounded-sm"
+                    className="w-full px-3 py-2 bg-white/30 border border-[#8A5A19]/30 text-[#1F3324] focus:border-[#8A5A19] outline-none rounded-sm"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-1">Description</label>
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-1">Description</label>
                 <textarea 
                   value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={3}
-                  className="w-full px-3 py-2 bg-black/30 border border-[#D4AF37]/30 text-[#D4AF37] focus:border-[#D4AF37] outline-none rounded-sm resize-none text-sm"
+                  className="w-full px-4 py-2 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm placeholder-[#1F3324]/30 text-sm resize-none"
+                  placeholder="Product description"
                 />
               </div>
+
+              {/* Color & Fabric */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Color Swatch</label>
+                  <div className="flex bg-white/40 border border-[#8A5A19]/20 rounded-sm focus-within:border-[#8A5A19]/60 overflow-hidden h-[38px]">
+                    <input 
+                      type="color"
+                      value={editColorSwatchHex}
+                      onChange={(e) => setEditColorSwatchHex(e.target.value)}
+                      className="h-full w-12 cursor-pointer border-none p-0 outline-none bg-transparent"
+                    />
+                    <input 
+                      type="text"
+                      value={editColorSwatchName}
+                      onChange={(e) => setEditColorSwatchName(e.target.value)}
+                      placeholder="Color Name"
+                      className="flex-1 px-3 bg-transparent text-[#1F3324] text-sm outline-none placeholder-[#1F3324]/30"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Fabric</label>
+                  <input 
+                    type="text" 
+                    value={editFabricSpec}
+                    onChange={(e) => setEditFabricSpec(e.target.value)}
+                    className="w-full px-4 py-2 bg-white/40 border border-[#8A5A19]/20 text-[#1F3324] focus:border-[#8A5A19]/60 outline-none rounded-sm placeholder-[#1F3324]/30 text-sm"
+                    placeholder="e.g. Pure Silk"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input 
                     type="checkbox" checked={editIsExplore} onChange={e => setEditIsExplore(e.target.checked)}
                     className="w-4 h-4 accent-[#D4AF37]"
                   />
-                  <span className="text-xs uppercase tracking-wider text-[#D4AF37]">Feature in &quot;Explore Collection&quot;</span>
+                  <span className="text-xs uppercase tracking-wider text-[#1F3324]">Feature in &quot;Explore Collection&quot;</span>
                 </label>
               </div>
 
-              <div className="pt-2 border-t border-[#D4AF37]/20">
-                <label className="block text-xs uppercase tracking-wider text-[#D4AF37]/80 mb-2">Add More Photos</label>
+              <div className="pt-2 border-t border-[#8A5A19]/20">
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Add More Photos</label>
                 <div className="flex flex-col gap-3">
-                  <label className="cursor-pointer w-full h-20 flex flex-col justify-center items-center border border-[#D4AF37]/30 border-dashed rounded-sm hover:border-[#D4AF37] transition-all bg-[#D4AF37]/5">
-                    <Plus className="h-5 w-5 text-[#D4AF37]/70 mb-1" />
-                    <span className="text-xs font-medium text-[#D4AF37]">Click to select additional photos</span>
+                  <label className="cursor-pointer w-full h-20 flex flex-col justify-center items-center border border-[#8A5A19]/30 border-dashed rounded-sm hover:border-[#8A5A19] transition-all bg-[#1F3324]/5">
+                    <Plus className="h-5 w-5 text-[#1F3324] font-semibold mb-1" />
+                    <span className="text-xs font-medium text-[#1F3324]">Click to select additional photos</span>
                     <input type="file" accept="image/*" multiple className="sr-only" onChange={handleEditImageChange} />
                   </label>
                   
                   {editUploadItems.length > 0 && (
                     <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                       {editUploadItems.map((item, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-sm overflow-hidden border border-[#D4AF37]/30 bg-black/40">
+                        <div key={idx} className="relative aspect-square rounded-sm overflow-hidden border border-[#8A5A19]/30 bg-white/40">
                           <Image src={item.preview} alt={`New upload ${idx}`} fill className="object-cover" />
-                          <button type="button" onClick={() => removeEditUploadItem(idx)} className="absolute top-0.5 right-0.5 bg-black/70 hover:bg-red-700 text-white p-0.5 rounded-full">
+                          <button type="button" onClick={() => removeEditUploadItem(idx)} className="absolute top-0.5 right-0.5 bg-white/70 hover:bg-red-700 text-[#1F3324] p-0.5 rounded-full">
                             <X className="w-3 h-3" />
                           </button>
                         </div>
@@ -737,10 +1144,10 @@ export default function AdminCategoryPage() {
               </div>
               
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={closeEditModal} className="px-4 py-2 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-sm text-sm uppercase tracking-wider">
+                <button type="button" onClick={closeEditModal} className="px-4 py-2 border border-[#8A5A19]/30 text-[#1F3324] hover:bg-[#1F3324]/10 rounded-sm text-sm uppercase tracking-wider">
                   Cancel
                 </button>
-                <button type="submit" disabled={isSavingEdit} className="px-4 py-2 bg-[#D4AF37] text-[#210209] hover:bg-[#b5952f] rounded-sm text-sm uppercase tracking-wider font-bold min-w-[100px] flex justify-center items-center">
+                <button type="submit" disabled={isSavingEdit} className="px-4 py-2 bg-[#1F3324] text-[#EBD4C9] hover:bg-[#b5952f] rounded-sm text-sm uppercase tracking-wider font-bold min-w-[100px] flex justify-center items-center">
                   {isSavingEdit ? <div className="w-4 h-4 border-2 border-[#210209] border-t-transparent rounded-full animate-spin"></div> : 'Save'}
                 </button>
               </div>
@@ -749,6 +1156,8 @@ export default function AdminCategoryPage() {
         </div>
       )}
 
+        </div>
+      )}
     </div>
   );
 }

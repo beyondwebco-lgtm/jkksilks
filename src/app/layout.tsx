@@ -1,15 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Outfit } from "next/font/google";
+import { Playfair_Display, Montserrat } from "next/font/google";
 import "./globals.css";
 
-const cormorantGaramond = Cormorant_Garamond({
-  weight: ["300", "400", "500", "600", "700"],
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-cormorant",
+  variable: "--font-playfair",
 });
 
-const outfit = Outfit({
+const montserrat = Montserrat({
   subsets: ["latin"],
+  variable: "--font-montserrat",
 });
 
 export const viewport: Viewport = {
@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className={`${outfit.className} ${cormorantGaramond.variable} min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]`}>
+      <body className={`${montserrat.className} ${playfair.variable} min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]`}>
         {children}
       </body>
     </html>
