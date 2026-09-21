@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, Mail } from 'lucide-react';
-import EnquiryModal from '@/components/EnquiryModal';
+
 import QuickContactFloating from '@/components/QuickContactFloating';
 import SearchBar from '@/components/SearchBar';
-import { InstagramIcon } from '@/components/Icons';
 
 const LotusIcon = ({ className }: { className?: string }) => (
   <div className={`relative ${className}`}>
@@ -102,7 +101,7 @@ const CategoryGrid = () => {
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
+
 
   return (
     <div className="min-h-screen flex flex-col bg-[#EBD4C9] text-[#1F3324] font-sans selection:bg-[#1F3324] selection:text-[#EBD4C9]">
@@ -150,38 +149,21 @@ export default function Home() {
 
           {/* Right: Heritage & Contact */}
           <div className="flex items-center justify-end lg:justify-center w-full">
-            <button
-              onClick={() => setEnquiryModalOpen(true)}
-              className="lg:hidden p-2 text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors rounded-full hover:bg-[#1F3324]/5"
+            <a
+              href="mailto:jkksilks1@gmail.com"
+              className="lg:hidden p-2 -mr-2 text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors rounded-full hover:bg-[#1F3324]/5"
             >
               <Mail className="h-5 w-5" />
-            </button>
-            <a 
-              href="https://www.instagram.com/jkk_silks?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==" 
-              target="_blank" 
-              rel="noreferrer"
-              className="lg:hidden p-2 -mr-2 text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors rounded-full hover:bg-[#1F3324]/5 ml-1"
-            >
-              <InstagramIcon className="w-5 h-5" />
             </a>
             <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
               <NavLink text="Dresses" href="/collection/dresses" />
               <NavLink text="Heritage" href="/collection/heritage" />
-              <button 
-                onClick={() => setEnquiryModalOpen(true)}
+              <a 
+                href="mailto:jkksilks1@gmail.com"
                 className="flex items-center gap-2 border border-[#1F3324] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#EBD4C9] bg-[#1F3324] hover:bg-[#D4AF37] font-semibold transition-all shadow-md"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>Enquire</span>
-              </button>
-              <a 
-                href="https://www.instagram.com/jkk_silks?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==" 
-                target="_blank" 
-                rel="noreferrer"
-                className="flex items-center justify-center border border-[#1F3324] w-8 h-8 rounded-full text-[#1F3324] hover:bg-[#1F3324] hover:text-[#EBD4C9] transition-all shadow-md"
-                aria-label="Instagram"
-              >
-                <InstagramIcon className="w-4 h-4" />
               </a>
             </div>
           </div>
@@ -309,8 +291,7 @@ export default function Home() {
         </div>
       </footer>
 
-      <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
-      <EnquiryModal isOpen={enquiryModalOpen} onClose={() => setEnquiryModalOpen(false)} />
+      <QuickContactFloating />
     </div>
   );
 }

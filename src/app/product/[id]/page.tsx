@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, MessageCircle, ShieldCheck, Truck, Mail } from 'lucide-react';
 import { supabase, Product } from '@/lib/supabase';
-import EnquiryModal from '@/components/EnquiryModal';
+
 import QuickContactFloating from '@/components/QuickContactFloating';
 
 export default function ProductDetailPage() {

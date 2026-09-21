@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Search } from 'lucide-react';
 import { supabase, Product } from '@/lib/supabase';
-import EnquiryModal from '@/components/EnquiryModal';
+
 import QuickContactFloating from '@/components/QuickContactFloating';
 
 const LotusIcon = ({ className }: { className?: string }) => (
@@ -43,7 +43,7 @@ function SearchResultsContent() {
   const [query, setQuery] = useState(initialQuery);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -210,11 +210,7 @@ function SearchResultsContent() {
         </div>
       </footer>
 
-      <EnquiryModal 
-        isOpen={enquiryModalOpen} 
-        onClose={() => setEnquiryModalOpen(false)} 
-      />
-      <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
+      <QuickContactFloating />
     </div>
   );
 }

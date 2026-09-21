@@ -7,7 +7,7 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Mail, Search } from 'lucide-react';
 import { InstagramIcon } from '@/components/Icons';
 import { supabase, Product } from '@/lib/supabase';
-import EnquiryModal from '@/components/EnquiryModal';
+
 import QuickContactFloating from '@/components/QuickContactFloating';
 
 const LotusIcon = ({ className }: { className?: string }) => (
@@ -71,7 +71,7 @@ export default function CategoryPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredProducts = products.filter(product => 
@@ -305,14 +305,14 @@ export default function CategoryPage() {
 
             {/* Logos of Mail and Instagram */}
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setEnquiryModalOpen(true)}
+              <a
+                href="mailto:jkksilks1@gmail.com"
                 className="w-8 h-8 rounded-full border border-[#8A5A19]/40 hover:border-[#8A5A19] text-[#8A5A19] hover:text-[#1F3324] hover:bg-[#8A5A19]/10 flex items-center justify-center transition-all cursor-pointer shadow-[0_0_10px_rgba(138,90,25,0.15)] active:scale-95"
                 title="Email Enquiry"
                 aria-label="Email"
               >
                 <Mail className="w-3.5 h-3.5" />
-              </button>
+              </a>
 
               <a 
                 href="https://www.instagram.com/jkk_silks?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==" 
@@ -330,12 +330,7 @@ export default function CategoryPage() {
       </footer>
 
       {/* Floating Quick Contact & Enquiry Modal */}
-      <QuickContactFloating onOpenEnquiry={() => setEnquiryModalOpen(true)} />
-      <EnquiryModal 
-        isOpen={enquiryModalOpen} 
-        onClose={() => setEnquiryModalOpen(false)} 
-        defaultCategory={categoryInfo.name} 
-      />
+      <QuickContactFloating />
       
     </div>
   );
