@@ -428,6 +428,39 @@ export default function AdminCategoryPage() {
     setNewSubCatUpload(null);
   };
 
+  const removeExistingSubCatCover = async () => {
+    if (!editingSubCatId || !newSubCatCover) return;
+    
+    if (!confirm('This cover photo will be permanently deleted from Cloudflare R2 immediately. Are you sure?')) {
+      return;
+    }
+
+    try {
+      // 1. Delete from R2
+      await fetch('/api/delete-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrls: [newSubCatCover] }),
+      });
+
+      // 2. Update Supabase
+      const res = await fetch('/api/categories', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingSubCatId, coverImage: '' }),
+      });
+      
+      if (!res.ok) throw new Error('Failed to update category in DB');
+
+      // 3. Update UI
+      setNewSubCatCover('');
+      setSubcategories(prev => prev.map(c => c.id === editingSubCatId ? { ...c, coverImage: '' } : c));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete cover photo.');
+    }
+  };
+
   const handleSaveSubCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSubCatName) return;
@@ -696,11 +729,14 @@ export default function AdminCategoryPage() {
                         <span className="text-[10px] uppercase z-10 mt-2">No Cover</span>
                       </div>
                     )}
-                    {newSubCatUpload && (
+                    {(newSubCatUpload || newSubCatCover) && (
                       <button
                         type="button"
-                        onClick={removeSubCatUploadItem}
-                        className="absolute top-1 right-1 bg-white/60 hover:bg-red-500 text-[#1F3324] text-[9px] p-1 rounded-sm shadow-md"
+                        onClick={() => {
+                          if (newSubCatUpload) removeSubCatUploadItem();
+                          else removeExistingSubCatCover();
+                        }}
+                        className="absolute top-1 right-1 bg-white/60 hover:bg-red-500 hover:text-white text-[#1F3324] text-[9px] p-1 rounded-sm shadow-md"
                       >
                         <X className="w-3 h-3" />
                       </button>
