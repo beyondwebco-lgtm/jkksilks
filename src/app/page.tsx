@@ -17,6 +17,8 @@ const LotusIcon = ({ className }: { className?: string }) => (
   </div>
 );
 
+export const dynamic = 'force-dynamic';
+
 async function getCategories() {
   const { data: dbCategories } = await supabase.from('categories').select('*');
   const { data: products } = await supabase.from('products').select('category');

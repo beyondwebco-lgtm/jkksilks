@@ -27,8 +27,10 @@ const curatedCategories = {
   },
 };
 
-export default async function CategoryPage({ params }: { params: { category: string } }) {
-  const categoryId = params.category;
+export const dynamic = 'force-dynamic';
+
+export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category: categoryId } = await params;
   
   let categoryInfo = {
     id: categoryId,
