@@ -46,6 +46,7 @@ export default function AdminCategoryPage() {
   const [editDiscountPrice, setEditDiscountPrice] = useState('');
   const [editIsExplore, setEditIsExplore] = useState(false);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [deletedImages, setDeletedImages] = useState<string[]>([]);
   const [editUploadItems, setEditUploadItems] = useState<UploadItem[]>([]);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
@@ -106,6 +107,7 @@ export default function AdminCategoryPage() {
     setEditDiscountPrice(product.discount_price ? product.discount_price.toString() : '');
     setEditIsExplore(product.is_explore_collection || false);
     setExistingImages(product.image_urls || [product.image_url]);
+    setDeletedImages([]);
     setEditUploadItems([]);
   };
 
@@ -113,6 +115,7 @@ export default function AdminCategoryPage() {
     setEditingProduct(null);
     editUploadItems.forEach(item => URL.revokeObjectURL(item.preview));
     setEditUploadItems([]);
+    setDeletedImages([]);
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
@@ -157,6 +160,14 @@ export default function AdminCategoryPage() {
         
       if (error) throw error;
       
+      if (deletedImages.length > 0) {
+        fetch('/api/delete-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageUrls: deletedImages }),
+        }).catch(console.error);
+      }
+      
       setProducts(products.map(p => p.id === editingProduct.id ? data : p));
       closeEditModal();
     } catch (err: unknown) {
@@ -187,6 +198,7 @@ export default function AdminCategoryPage() {
   };
 
   const removeExistingImage = (index: number) => {
+    setDeletedImages(prev => [...prev, existingImages[index]]);
     setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
