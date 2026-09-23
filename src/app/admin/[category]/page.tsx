@@ -46,7 +46,6 @@ export default function AdminCategoryPage() {
   const [editDiscountPrice, setEditDiscountPrice] = useState('');
   const [editIsExplore, setEditIsExplore] = useState(false);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [deletedImages, setDeletedImages] = useState<string[]>([]);
   const [editUploadItems, setEditUploadItems] = useState<UploadItem[]>([]);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
@@ -107,7 +106,6 @@ export default function AdminCategoryPage() {
     setEditDiscountPrice(product.discount_price ? product.discount_price.toString() : '');
     setEditIsExplore(product.is_explore_collection || false);
     setExistingImages(product.image_urls || [product.image_url]);
-    setDeletedImages([]);
     setEditUploadItems([]);
   };
 
@@ -115,7 +113,6 @@ export default function AdminCategoryPage() {
     setEditingProduct(null);
     editUploadItems.forEach(item => URL.revokeObjectURL(item.preview));
     setEditUploadItems([]);
-    setDeletedImages([]);
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
@@ -160,14 +157,6 @@ export default function AdminCategoryPage() {
         
       if (error) throw error;
       
-      if (deletedImages.length > 0) {
-        fetch('/api/delete-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageUrls: deletedImages }),
-        }).catch(console.error);
-      }
-      
       setProducts(products.map(p => p.id === editingProduct.id ? data : p));
       closeEditModal();
     } catch (err: unknown) {
@@ -197,9 +186,47 @@ export default function AdminCategoryPage() {
     });
   };
 
-  const removeExistingImage = (index: number) => {
-    setDeletedImages(prev => [...prev, existingImages[index]]);
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  const removeExistingImage = async (index: number) => {
+    if (!editingProduct) return;
+    
+    if (existingImages.length === 1) {
+      alert("You cannot delete the only photo. Please upload a new photo first, or delete the entire product.");
+      return;
+    }
+
+    if (!confirm('This photo will be permanently deleted from Cloudflare R2 immediately. Are you sure?')) {
+      return;
+    }
+
+    const urlToDelete = existingImages[index];
+    const newImages = existingImages.filter((_, i) => i !== index);
+    
+    // Update UI immediately
+    setExistingImages(newImages);
+
+    try {
+      // 1. Delete from R2
+      await fetch('/api/delete-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrls: [urlToDelete] }),
+      });
+
+      // 2. Update Supabase
+      await supabase
+        .from('products')
+        .update({
+          image_url: newImages[0],
+          image_urls: newImages
+        })
+        .eq('id', editingProduct.id);
+        
+      // Update the main products grid in background so it matches if modal is closed
+      setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, image_url: newImages[0], image_urls: newImages } : p));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete image from storage.');
+    }
   };
 
   useEffect(() => {
