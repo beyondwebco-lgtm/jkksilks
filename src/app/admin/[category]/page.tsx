@@ -186,6 +186,10 @@ export default function AdminCategoryPage() {
     });
   };
 
+  const removeExistingImage = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -1145,6 +1149,25 @@ export default function AdminCategoryPage() {
               </div>
 
               <div className="pt-2 border-t border-[#8A5A19]/20">
+                <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Existing Photos</label>
+                {existingImages.length > 0 ? (
+                  <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 mb-4">
+                    {existingImages.map((url, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-sm overflow-hidden border border-[#8A5A19]/30 bg-white/40 group">
+                        <Image src={url} alt={`Existing ${idx}`} fill className="object-cover" />
+                        <button type="button" onClick={() => removeExistingImage(idx)} className="absolute top-1 right-1 bg-white/80 hover:bg-red-500 hover:text-white text-[#1F3324] p-1 rounded-sm opacity-0 group-hover:opacity-100 transition-all shadow-sm">
+                          <X className="w-3 h-3" />
+                        </button>
+                        {idx === 0 && (
+                          <div className="absolute bottom-1 left-1 bg-[#1F3324]/90 text-[#EBD4C9] text-[9px] px-1.5 py-0.5 rounded-sm">Cover</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-[#1F3324]/60 mb-4 italic">No existing photos.</p>
+                )}
+
                 <label className="block text-xs uppercase tracking-wider text-[#1F3324] font-semibold mb-2">Add More Photos</label>
                 <div className="flex flex-col gap-3">
                   <label className="cursor-pointer w-full h-20 flex flex-col justify-center items-center border border-[#8A5A19]/30 border-dashed rounded-sm hover:border-[#8A5A19] transition-all bg-[#1F3324]/5">
