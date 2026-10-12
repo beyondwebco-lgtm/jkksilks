@@ -59,8 +59,10 @@ export default function AdminCategoryPage() {
   const [isSavingSubCat, setIsSavingSubCat] = useState(false);
   const [editingSubCatId, setEditingSubCatId] = useState<string | null>(null);
 
-  // Tab State
+  // Tab & Filter State
   const [activeTab, setActiveTab] = useState<'details' | 'products'>('details');
+  const [collectionFilter, setCollectionFilter] = useState<'all' | 'new_collection'>('all');
+  const [isUpdatingBulk, setIsUpdatingBulk] = useState(false);
 
   const uploadSingleImageToR2 = async (file: File): Promise<string> => {
     const res = await fetch('/api/upload', {
@@ -226,6 +228,53 @@ export default function AdminCategoryPage() {
     } catch (err) {
       console.error(err);
       alert('Failed to delete image from storage.');
+    }
+  };
+
+  // Quick-toggle single product in/out of New Collection
+  const toggleSingleProductCollection = async (product: Product, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const newValue = !product.is_explore_collection;
+    try {
+      // Optimistic update
+      setProducts(prev => prev.map(p => p.id === product.id ? { ...p, is_explore_collection: newValue } : p));
+
+      const { error } = await supabase
+        .from('products')
+        .update({ is_explore_collection: newValue })
+        .eq('id', product.id);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error toggling New Collection status:', err);
+      alert('Failed to update New Collection status.');
+      // Revert on error
+      setProducts(prev => prev.map(p => p.id === product.id ? { ...p, is_explore_collection: !newValue } : p));
+    }
+  };
+
+  // Bulk add all currently listed products to New Collection
+  const handleAddAllToNewCollection = async () => {
+    if (!confirm(`Add all ${products.length} displayed products in this section to the New Collection?`)) return;
+    setIsUpdatingBulk(true);
+    try {
+      const ids = products.map(p => p.id);
+      if (ids.length === 0) return;
+
+      const { error } = await supabase
+        .from('products')
+        .update({ is_explore_collection: true })
+        .in('id', ids);
+
+      if (error) throw error;
+
+      setProducts(prev => prev.map(p => ({ ...p, is_explore_collection: true })));
+      alert('Success! All products in this section are now in the New Collection.');
+    } catch (err) {
+      console.error('Error bulk updating collection:', err);
+      alert('Failed to update products.');
+    } finally {
+      setIsUpdatingBulk(false);
     }
   };
 
@@ -1041,9 +1090,55 @@ export default function AdminCategoryPage() {
 
       {/* Product List */}
       <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[#1F3324] font-serif text-xl">All {category} ({products.length})</h2>
-          <span className="text-xs text-[#1F3324] font-semibold">Changes reflect instantly on client pages</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#8A5A19]/20">
+          <div>
+            <h2 className="text-[#1F3324] font-serif text-xl">
+              All {category} ({products.length})
+            </h2>
+            <p className="text-xs text-[#1F3324] font-semibold mt-0.5">
+              {products.filter(p => p.is_explore_collection).length} items currently in New Collection
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Filter Toggle */}
+            <div className="flex items-center bg-white/50 border border-[#8A5A19]/30 rounded-sm p-1">
+              <button
+                type="button"
+                onClick={() => setCollectionFilter('all')}
+                className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-xs transition-all ${
+                  collectionFilter === 'all'
+                    ? 'bg-[#1F3324] text-[#EBD4C9] shadow-sm'
+                    : 'text-[#1F3324] hover:text-[#8A5A19]'
+                }`}
+              >
+                All ({products.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCollectionFilter('new_collection')}
+                className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-xs transition-all flex items-center gap-1.5 ${
+                  collectionFilter === 'new_collection'
+                    ? 'bg-[#1F3324] text-[#EBD4C9] shadow-sm'
+                    : 'text-[#1F3324] hover:text-[#8A5A19]'
+                }`}
+              >
+                <span>✨ New Collection ({products.filter(p => p.is_explore_collection).length})</span>
+              </button>
+            </div>
+
+            {/* Bulk Add All Button */}
+            <button
+              type="button"
+              onClick={handleAddAllToNewCollection}
+              disabled={isUpdatingBulk}
+              className="px-3.5 py-1.5 bg-[#8A5A19] hover:bg-[#1F3324] text-[#EBD4C9] text-xs uppercase tracking-wider font-semibold rounded-sm transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Add all displayed items to New Collection"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Add All to New Collection</span>
+            </button>
+          </div>
         </div>
         
         {loading ? (
@@ -1060,7 +1155,9 @@ export default function AdminCategoryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => {
+            {products
+              .filter(p => collectionFilter === 'all' || p.is_explore_collection)
+              .map((product) => {
               const pDiscount = calculateDiscountPercent(
                 product.original_price ? String(product.original_price) : '',
                 product.discount_price ? String(product.discount_price) : ''
@@ -1085,19 +1182,26 @@ export default function AdminCategoryPage() {
                       </span>
                     )}
 
-                    {/* New collection tag */}
-                    {product.is_explore_collection && (
-                      <span className="absolute top-2 left-2 bg-[#1F3324] text-[#EBD4C9] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-md flex items-center gap-1 border border-[#8A5A19]/40">
-                        ✨ New Collection
-                      </span>
-                    )}
+                    {/* Clickable New Collection Badge / Toggle */}
+                    <button
+                      type="button"
+                      onClick={(e) => toggleSingleProductCollection(product, e)}
+                      className={`absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-md flex items-center gap-1 border transition-all cursor-pointer ${
+                        product.is_explore_collection
+                          ? 'bg-[#1F3324] text-[#EBD4C9] border-[#8A5A19]/40 hover:bg-[#8A5A19]'
+                          : 'bg-white/90 text-[#1F3324] border-gray-300 hover:bg-[#1F3324] hover:text-[#EBD4C9]'
+                      }`}
+                      title={product.is_explore_collection ? 'Click to remove from New Collection' : 'Click to add to New Collection'}
+                    >
+                      <span>{product.is_explore_collection ? '✨ New Collection' : '+ Add to New'}</span>
+                    </button>
 
                     {/* Actions container */}
                     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       {/* Edit button */}
                       <button
                         onClick={() => openEditModal(product)}
-                        className="bg-[#1F3324]/90 text-[#EBD4C9] p-2 rounded-full hover:bg-[#1F3324] shadow-lg"
+                        className="bg-[#1F3324]/90 text-[#EBD4C9] p-2 rounded-full hover:bg-[#1F3324] shadow-lg cursor-pointer"
                         title="Edit Product"
                       >
                         <Edit className="w-4 h-4" />
@@ -1106,7 +1210,7 @@ export default function AdminCategoryPage() {
                       {/* Delete button */}
                       <button
                         onClick={() => handleDelete(product)}
-                        className="bg-red-900/90 text-red-100 p-2 rounded-full hover:bg-red-700 shadow-lg"
+                        className="bg-red-900/90 text-red-100 p-2 rounded-full hover:bg-red-700 shadow-lg cursor-pointer"
                         title="Delete Product & Storage"
                       >
                         <Trash2 className="w-4 h-4" />
