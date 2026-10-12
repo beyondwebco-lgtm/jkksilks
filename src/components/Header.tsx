@@ -76,7 +76,9 @@ export default function Header() {
             href="/collection/new-collection"
             className="lg:hidden flex items-center gap-1.5 border border-[#8A5A19]/30 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider text-[#1F3324] font-semibold bg-gradient-to-r from-[#D4AF37]/25 to-[#F1C40F]/30"
           >
-            <Sparkles className="h-3 w-3 text-[#8A5A19]" />
+            <div className="relative w-3.5 h-3.5">
+              <Image src="/images/lotus_icon_transparent.png" alt="Lotus" fill className="object-contain" />
+            </div>
             <span>New In</span>
           </Link>
           <div className="hidden lg:flex items-center gap-7 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
@@ -84,9 +86,16 @@ export default function Header() {
             <NavLink text="Heritage" href="/collection/heritage" />
             <Link 
               href="/collection/new-collection"
-              className="relative group inline-flex items-center gap-2 px-4 py-2 rounded-sm text-[11px] tracking-[0.22em] uppercase font-semibold text-[#EBD4C9] bg-[#1F3324] hover:bg-[#8A5A19] border border-[#8A5A19]/50 hover:border-[#D4AF37] shadow-[0_2px_12px_rgba(31,51,36,0.18)] hover:shadow-[0_4px_20px_rgba(138,90,25,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
+              className="relative group inline-flex items-center gap-2.5 px-4 py-2 rounded-sm text-[11px] tracking-[0.22em] uppercase font-semibold text-[#EBD4C9] bg-[#1F3324] hover:bg-[#8A5A19] border border-[#8A5A19]/50 hover:border-[#D4AF37] shadow-[0_2px_12px_rgba(31,51,36,0.18)] hover:shadow-[0_4px_20px_rgba(138,90,25,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] group-hover:rotate-12 transition-transform duration-300" />
+              <div className="relative w-4 h-4 flex-shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                <Image 
+                  src="/images/lotus_icon_transparent.png" 
+                  alt="Lotus Motif" 
+                  fill 
+                  className="object-contain drop-shadow-[0_0_6px_rgba(212,175,55,0.5)]" 
+                />
+              </div>
               <span>New Collection</span>
             </Link>
           </div>
@@ -103,7 +112,9 @@ export default function Header() {
               className="text-left py-2.5 px-3 rounded-sm bg-gradient-to-r from-[#D4AF37]/30 to-[#D4AF37]/50 font-bold text-[#1F3324] flex items-center justify-between border border-[#8A5A19]/30 shadow-sm"
             >
               <span className="flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#8A5A19]" />
+                <div className="relative w-4 h-4">
+                  <Image src="/images/lotus_icon_transparent.png" alt="Lotus" fill className="object-contain" />
+                </div>
                 New Collection
               </span>
               <span className="text-[10px] bg-[#1F3324] text-[#EBD4C9] px-1.5 py-0.5 rounded-xs">NEW</span>
