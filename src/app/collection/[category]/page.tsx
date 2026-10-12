@@ -53,8 +53,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(36);
+        .eq('is_explore_collection', true)
+        .order('created_at', { ascending: false });
       if (!error && data) {
         products = data;
       }
