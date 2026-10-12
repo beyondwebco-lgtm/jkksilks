@@ -118,6 +118,19 @@ export default function AdminLayout({
           <div className="flex flex-col gap-2 mb-8 flex-1 overflow-y-auto pr-2">
             
             <Link 
+              href="/admin/new-collection"
+              className={`px-4 py-3 rounded-sm border transition-all flex items-center justify-between ${
+                pathname.includes('/admin/new-collection')
+                  ? 'border-[#8A5A19] bg-[#1F3324] text-[#EBD4C9] shadow-[0_4px_15px_rgba(138,90,25,0.15)]'
+                  : 'border-[#8A5A19]/30 bg-white/70 text-[#1F3324] hover:border-[#8A5A19] font-bold shadow-xs'
+              }`}
+            >
+              <span className="font-semibold text-sm flex items-center gap-1.5">
+                <span>✨ New Collection</span>
+              </span>
+            </Link>
+
+            <Link 
               href="/admin/sarees"
               className={`px-4 py-3 rounded-sm border transition-all flex items-center justify-between ${
                 pathname.includes('/admin/sarees')
