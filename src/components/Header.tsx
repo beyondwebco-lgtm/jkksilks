@@ -79,19 +79,15 @@ export default function Header() {
             <Sparkles className="h-3 w-3 text-[#8A5A19]" />
             <span>New In</span>
           </Link>
-          <div className="hidden lg:flex items-center gap-6 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
+          <div className="hidden lg:flex items-center gap-7 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
             <NavLink text="Dresses" href="/collection/dresses" />
             <NavLink text="Heritage" href="/collection/heritage" />
             <Link 
               href="/collection/new-collection"
-              className="relative group overflow-hidden flex items-center gap-2 border border-[#8A5A19]/40 px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-[0.15em] text-[#1F3324] font-semibold bg-gradient-to-r from-[#D4AF37]/25 via-[#D4AF37]/45 to-[#F1C40F]/30 hover:border-[#8A5A19] hover:shadow-[0_0_18px_rgba(212,175,55,0.45)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+              className="relative group inline-flex items-center gap-2 px-4 py-2 rounded-sm text-[11px] tracking-[0.22em] uppercase font-semibold text-[#EBD4C9] bg-[#1F3324] hover:bg-[#8A5A19] border border-[#8A5A19]/50 hover:border-[#D4AF37] shadow-[0_2px_12px_rgba(31,51,36,0.18)] hover:shadow-[0_4px_20px_rgba(138,90,25,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#8A5A19] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#8A5A19]"></span>
-              </span>
-              <Sparkles className="w-3.5 h-3.5 text-[#8A5A19] animate-pulse" />
-              <span className="font-bold text-[#1F3324]">New Collection</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] group-hover:rotate-12 transition-transform duration-300" />
+              <span>New Collection</span>
             </Link>
           </div>
         </div>
