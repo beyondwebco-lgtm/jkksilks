@@ -86,17 +86,18 @@ export default function Header() {
             <NavLink text="Heritage" href="/collection/heritage" />
             <Link 
               href="/collection/new-collection"
-              className="relative group inline-flex items-center gap-2.5 px-4 py-2 rounded-sm text-[11px] tracking-[0.22em] uppercase font-semibold text-[#EBD4C9] bg-[#1F3324] hover:bg-[#8A5A19] border border-[#8A5A19]/50 hover:border-[#D4AF37] shadow-[0_2px_12px_rgba(31,51,36,0.18)] hover:shadow-[0_4px_20px_rgba(138,90,25,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
+              className="relative group inline-flex items-center gap-3 px-4.5 py-2 rounded-sm text-[11px] tracking-[0.22em] uppercase font-semibold text-[#EBD4C9] bg-[#1F3324] hover:bg-[#8A5A19] border border-[#8A5A19]/50 hover:border-[#D4AF37] shadow-[0_2px_12px_rgba(31,51,36,0.18)] hover:shadow-[0_4px_20px_rgba(138,90,25,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
             >
-              <div className="relative w-4 h-4 flex-shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+              <div className="relative w-6 h-6 flex-shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
                 <Image 
                   src="/images/lotus_icon_transparent.png" 
                   alt="Lotus Motif" 
                   fill 
-                  className="object-contain drop-shadow-[0_0_6px_rgba(212,175,55,0.5)]" 
+                  sizes="24px"
+                  className="object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]" 
                 />
               </div>
-              <span>New Collection</span>
+              <span className="pt-0.5">New Collection</span>
             </Link>
           </div>
         </div>
