@@ -43,48 +43,65 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   let categoryNamesToQuery: string[] = [];
 
   try {
-    const { data: allCategories } = await supabase.from('categories').select('*');
-    
-    if (allCategories) {
-      if (['sarees', 'jewellery', 'heritage', 'dresses'].includes(categoryId)) {
-        // Main section: get all subcategories in this section
-        const sectionCategories = allCategories.filter(c => c.section === categoryId);
-        categoryNamesToQuery = sectionCategories.map(c => c.name);
-        categoryNamesToQuery.push(categoryId); // for older products saved directly under 'sarees'
-        
-        // Set basic info for main section
-        if (curatedCategories[categoryId as keyof typeof curatedCategories]) {
-          categoryInfo = curatedCategories[categoryId as keyof typeof curatedCategories];
-        }
-      } else {
-        // Subcategory page
-        const matchedCategory = allCategories.find(c => 
-          c.name.toLowerCase().replace(/\s+/g, '-') === categoryId
-        );
-        if (matchedCategory) {
-          categoryNamesToQuery = [matchedCategory.name];
-          categoryInfo = {
-            id: matchedCategory.id,
-            name: matchedCategory.name,
-            description: matchedCategory.description || `Explore our exclusive ${matchedCategory.name} collection.`,
-            icon: '✧'
-          };
-        } else {
-          categoryNamesToQuery = [categoryId.replace(/-/g, ' ')];
-        }
+    if (categoryId === 'new-collection' || categoryId === 'new-arrivals') {
+      categoryInfo = {
+        id: 'new-collection',
+        name: 'New Collection',
+        description: 'Discover our latest handwoven silk sarees, bridal masterpieces & festive treasures',
+        icon: '✨',
+      };
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(36);
+      if (!error && data) {
+        products = data;
       }
     } else {
-      categoryNamesToQuery = [categoryId.replace(/-/g, ' ')];
-    }
+      const { data: allCategories } = await supabase.from('categories').select('*');
+      
+      if (allCategories) {
+        if (['sarees', 'jewellery', 'heritage', 'dresses'].includes(categoryId)) {
+          // Main section: get all subcategories in this section
+          const sectionCategories = allCategories.filter(c => c.section === categoryId);
+          categoryNamesToQuery = sectionCategories.map(c => c.name);
+          categoryNamesToQuery.push(categoryId); // for older products saved directly under 'sarees'
+          
+          // Set basic info for main section
+          if (curatedCategories[categoryId as keyof typeof curatedCategories]) {
+            categoryInfo = curatedCategories[categoryId as keyof typeof curatedCategories];
+          }
+        } else {
+          // Subcategory page
+          const matchedCategory = allCategories.find(c => 
+            c.name.toLowerCase().replace(/\s+/g, '-') === categoryId
+          );
+          if (matchedCategory) {
+            categoryNamesToQuery = [matchedCategory.name];
+            categoryInfo = {
+              id: matchedCategory.id,
+              name: matchedCategory.name,
+              description: matchedCategory.description || `Explore our exclusive ${matchedCategory.name} collection.`,
+              icon: '✧'
+            };
+          } else {
+            categoryNamesToQuery = [categoryId.replace(/-/g, ' ')];
+          }
+        }
+      } else {
+        categoryNamesToQuery = [categoryId.replace(/-/g, ' ')];
+      }
 
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .in('category', categoryNamesToQuery)
-      .order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .in('category', categoryNamesToQuery)
+        .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      products = data;
+      if (!error && data) {
+        products = data;
+      }
     }
   } catch (err) {
     console.error('Failed to fetch products:', err);

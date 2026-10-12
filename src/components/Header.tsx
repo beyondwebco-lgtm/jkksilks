@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, Mail } from 'lucide-react';
+import { Menu, X, Mail, Sparkles } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 
 const LotusAnimation = () => (
@@ -72,22 +72,27 @@ export default function Header() {
 
         {/* Right: Heritage & Contact */}
         <div className="flex items-center justify-end lg:justify-center w-full">
-          <a
-            href="mailto:jkksilks1@gmail.com"
-            className="lg:hidden p-2 -mr-2 text-[#1F3324] hover:text-[#8A5A19] font-semibold transition-colors rounded-full hover:bg-[#1F3324]/5"
+          <Link
+            href="/collection/new-collection"
+            className="lg:hidden flex items-center gap-1.5 border border-[#8A5A19]/30 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider text-[#1F3324] font-semibold bg-gradient-to-r from-[#D4AF37]/25 to-[#F1C40F]/30"
           >
-            <Mail className="h-5 w-5" />
-          </a>
-          <div className="hidden lg:flex items-center gap-8 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
+            <Sparkles className="h-3 w-3 text-[#8A5A19]" />
+            <span>New In</span>
+          </Link>
+          <div className="hidden lg:flex items-center gap-6 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
             <NavLink text="Dresses" href="/collection/dresses" />
             <NavLink text="Heritage" href="/collection/heritage" />
-            <a 
-              href="mailto:jkksilks1@gmail.com"
-              className="flex items-center gap-2 border border-[#1F3324] px-4 py-1.5 rounded-sm text-xs uppercase tracking-wider text-[#EBD4C9] bg-[#1F3324] hover:bg-[#D4AF37] font-semibold transition-all shadow-md"
+            <Link 
+              href="/collection/new-collection"
+              className="relative group overflow-hidden flex items-center gap-2 border border-[#8A5A19]/40 px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-[0.15em] text-[#1F3324] font-semibold bg-gradient-to-r from-[#D4AF37]/25 via-[#D4AF37]/45 to-[#F1C40F]/30 hover:border-[#8A5A19] hover:shadow-[0_0_18px_rgba(212,175,55,0.45)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Mail className="w-3.5 h-3.5" />
-              <span>Enquire</span>
-            </a>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#8A5A19] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#8A5A19]"></span>
+              </span>
+              <Sparkles className="w-3.5 h-3.5 text-[#8A5A19] animate-pulse" />
+              <span className="font-bold text-[#1F3324]">New Collection</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -96,6 +101,17 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 right-0 z-50 bg-[#EBD4C9]/98 backdrop-blur-md border-b border-[#1F3324]/10 px-6 py-6 shadow-xl">
            <div className="flex flex-col gap-3.5 text-xs font-medium uppercase tracking-[0.25em]">
+            <Link 
+              href="/collection/new-collection" 
+              onClick={() => setMobileMenuOpen(false)} 
+              className="text-left py-2.5 px-3 rounded-sm bg-gradient-to-r from-[#D4AF37]/30 to-[#D4AF37]/50 font-bold text-[#1F3324] flex items-center justify-between border border-[#8A5A19]/30 shadow-sm"
+            >
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#8A5A19]" />
+                New Collection
+              </span>
+              <span className="text-[10px] bg-[#1F3324] text-[#EBD4C9] px-1.5 py-0.5 rounded-xs">NEW</span>
+            </Link>
             <Link href="/collection/sarees" onClick={() => setMobileMenuOpen(false)} className="text-left py-2.5 border-b border-[#1F3324]/10 hover:text-[#8A5A19] font-semibold text-[#1F3324] flex justify-between">
               <span>✦ Pure Sarees</span>
             </Link>
