@@ -81,24 +81,24 @@ export default function Header() {
             </div>
             <span>New In</span>
           </Link>
-          <div className="hidden lg:flex items-center gap-7 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324]">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-7 text-xs font-medium tracking-[0.2em] uppercase text-[#1F3324] flex-nowrap">
             <NavLink text="Dresses" href="/collection/dresses" />
             <NavLink text="Heritage" href="/collection/heritage" />
             <Link 
               href="/collection/new-collection"
-              className="group relative cursor-pointer flex flex-col items-center justify-center pb-2 px-2"
+              className="group relative cursor-pointer flex flex-col items-center justify-center pb-2 px-2 flex-shrink-0"
             >
-              <div className="flex items-center gap-2 group-hover:text-[#8A5A19] font-semibold transition-all duration-300 relative z-10 group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
-                <div className="relative w-6 h-6 flex-shrink-0 group-hover:scale-115 group-hover:rotate-6 transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.9)]">
+              <div className="flex items-center gap-2 group-hover:text-[#8A5A19] font-semibold transition-all duration-300 relative z-10 group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.85)] flex-nowrap whitespace-nowrap">
+                <div className="relative w-5 h-5 flex-shrink-0 group-hover:scale-115 group-hover:rotate-6 transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.9)]">
                   <Image 
                     src="/images/lotus_icon_transparent.png" 
                     alt="Lotus Motif" 
                     fill 
-                    sizes="24px"
+                    sizes="20px"
                     className="object-contain" 
                   />
                 </div>
-                <span className="tracking-[0.2em]">New Collection</span>
+                <span className="tracking-[0.2em] whitespace-nowrap">New Collection</span>
               </div>
               <LotusAnimation />
             </Link>
