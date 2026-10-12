@@ -86,18 +86,21 @@ export default function Header() {
             <NavLink text="Heritage" href="/collection/heritage" />
             <Link 
               href="/collection/new-collection"
-              className="relative group inline-flex items-center gap-3 px-4.5 py-2 rounded-sm text-[11px] tracking-[0.22em] uppercase font-semibold text-[#EBD4C9] bg-[#1F3324] hover:bg-[#8A5A19] border border-[#8A5A19]/50 hover:border-[#D4AF37] shadow-[0_2px_12px_rgba(31,51,36,0.18)] hover:shadow-[0_4px_20px_rgba(138,90,25,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
+              className="group relative cursor-pointer flex flex-col items-center justify-center pb-2 px-2"
             >
-              <div className="relative w-6 h-6 flex-shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
-                <Image 
-                  src="/images/lotus_icon_transparent.png" 
-                  alt="Lotus Motif" 
-                  fill 
-                  sizes="24px"
-                  className="object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]" 
-                />
+              <div className="flex items-center gap-2 group-hover:text-[#8A5A19] font-semibold transition-all duration-300 relative z-10 group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
+                <div className="relative w-6 h-6 flex-shrink-0 group-hover:scale-115 group-hover:rotate-6 transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(212,175,55,0.9)]">
+                  <Image 
+                    src="/images/lotus_icon_transparent.png" 
+                    alt="Lotus Motif" 
+                    fill 
+                    sizes="24px"
+                    className="object-contain" 
+                  />
+                </div>
+                <span className="tracking-[0.2em]">New Collection</span>
               </div>
-              <span className="pt-0.5">New Collection</span>
+              <LotusAnimation />
             </Link>
           </div>
         </div>
