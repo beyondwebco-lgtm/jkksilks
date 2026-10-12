@@ -27,7 +27,7 @@ export default function AdminCategoryPage() {
   const [description, setDescription] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [discountPrice, setDiscountPrice] = useState('');
-  const [isExploreCollection, setIsExploreCollection] = useState(false);
+  const [isExploreCollection, setIsExploreCollection] = useState(true);
   const [categorySelect, setCategorySelect] = useState(category);
   const [colorSwatchHex, setColorSwatchHex] = useState('#D4AF37');
   const [colorSwatchName, setColorSwatchName] = useState('');
@@ -612,7 +612,7 @@ export default function AdminCategoryPage() {
       setDescription('');
       setOriginalPrice('');
       setDiscountPrice('');
-      setIsExploreCollection(false);
+      setIsExploreCollection(true);
       setUploadItems([]);
 
       setProducts([data, ...products]);
@@ -996,6 +996,26 @@ export default function AdminCategoryPage() {
               />
             </div>
 
+            {/* Add to New Collection Toggle */}
+            <div className="p-3 bg-white/50 border border-[#8A5A19]/30 rounded-sm">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  checked={isExploreCollection} 
+                  onChange={e => setIsExploreCollection(e.target.checked)}
+                  className="w-4 h-4 accent-[#1F3324] cursor-pointer"
+                />
+                <div>
+                  <span className="text-xs uppercase tracking-wider text-[#1F3324] font-bold block">
+                    ✨ Add to New Collection
+                  </span>
+                  <span className="text-[10px] text-[#1F3324]/70 block font-medium">
+                    This saree will immediately appear on the public New Collection page and header link
+                  </span>
+                </div>
+              </label>
+            </div>
+
             {uploadItems.length > 0 && (
               <p className="text-[10px] text-[#1F3324] font-semibold italic">
                 Tip: Hover over any photo and click &quot;Set Cover&quot; to make it the primary display image.
@@ -1065,10 +1085,10 @@ export default function AdminCategoryPage() {
                       </span>
                     )}
 
-                    {/* Explore collection tag */}
+                    {/* New collection tag */}
                     {product.is_explore_collection && (
-                      <span className="absolute top-2 left-2 bg-[#1F3324] text-[#EBD4C9] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-md">
-                        Featured
+                      <span className="absolute top-2 left-2 bg-[#1F3324] text-[#EBD4C9] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-md flex items-center gap-1 border border-[#8A5A19]/40">
+                        ✨ New Collection
                       </span>
                     )}
 
@@ -1213,13 +1233,22 @@ export default function AdminCategoryPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="flex items-center gap-3 cursor-pointer">
+              <div className="p-3 bg-white/50 border border-[#8A5A19]/30 rounded-sm">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input 
-                    type="checkbox" checked={editIsExplore} onChange={e => setEditIsExplore(e.target.checked)}
-                    className="w-4 h-4 accent-[#D4AF37]"
+                    type="checkbox" 
+                    checked={editIsExplore} 
+                    onChange={e => setEditIsExplore(e.target.checked)}
+                    className="w-4 h-4 accent-[#1F3324] cursor-pointer"
                   />
-                  <span className="text-xs uppercase tracking-wider text-[#1F3324]">Feature in &quot;Explore Collection&quot;</span>
+                  <div>
+                    <span className="text-xs uppercase tracking-wider text-[#1F3324] font-bold block">
+                      ✨ Include in New Collection
+                    </span>
+                    <span className="text-[10px] text-[#1F3324]/70 block font-medium">
+                      Check to showcase on the public New Collection page, uncheck to remove
+                    </span>
+                  </div>
                 </label>
               </div>
 
